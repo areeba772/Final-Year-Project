@@ -1,0 +1,577 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Food Details - Smart Cafe{% endblock %}
+
+{% block styles %}
+<style>
+      :root {
+        --wood: #5d4037;
+        --paper: #fffdf0;
+      }
+      
+      body {
+        background: linear-gradient(
+            rgba(20, 0, 5, 0.9),
+            rgba(20, 0, 5, 0.9)
+          ),
+          url("https://img.freepik.com/free-photo/top-view-food-frame-with-copy-space_23-2148723447.jpg?w=1380&t=st=1680000000~exp=1680000000~hmac=xyz");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        color: #333;
+        display: block;
+      }
+
+      .table-setup {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 60px;
+        padding: 60px 20px;
+        max-width: 1300px;
+        margin: 0 auto;
+      }
+
+      .plate-area {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .food-plate {
+        width: 450px;
+        height: 450px;
+        object-fit: contain;
+        border-radius: 50%;
+        border: 10px solid white;
+        background-color: white;
+        padding: 15px;
+        box-sizing: border-box;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transition: transform 0.5s;
+        margin: 0 auto;
+        display: block;
+      }
+      .food-plate:hover {
+        transform: scale(1.05) rotate(2deg);
+      }
+
+      .clipboard-wrapper {
+        flex: 1;
+        max-width: 450px;
+        position: relative;
+        transform: rotate(-2deg);
+      }
+      .board {
+        background: #3e2723;
+        border-radius: 20px;
+        padding: 15px;
+        box-shadow: 10px 20px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+      }
+      .metal-clip {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 140px;
+        height: 40px;
+        background: linear-gradient(#bdc3c7, #7f8c8d);
+        border-radius: 5px;
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .paper {
+        background: #fffdf0;
+        padding: 50px 30px 30px 30px;
+        border-radius: 5px;
+        min-height: 500px;
+        box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        position: relative;
+      }
+      .paper::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: repeating-linear-gradient(
+          transparent,
+          transparent 29px,
+          #d1c4e9 30px
+        );
+        pointer-events: none;
+        opacity: 0.3;
+      }
+
+      .handwritten-title {
+        font-family: "Kalam", cursive;
+        font-size: 2.8rem;
+        color: #d35400;
+        margin-bottom: 5px;
+      }
+      .category-stamp {
+        display: inline-block;
+        border: 2px solid #c0392b;
+        color: #c0392b;
+        padding: 5px 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 14px;
+        border-radius: 4px;
+        transform: rotate(-3deg);
+        margin-bottom: 20px;
+        opacity: 0.8;
+      }
+      .paper-desc {
+        font-family: "Kalam", cursive;
+        color: #555;
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        line-height: 1.4;
+      }
+      .price-box {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #2c3e50;
+        border-top: 3px double #aaa;
+        border-bottom: 3px double #aaa;
+        padding: 10px 0;
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      .paper-select-label {
+        font-family: "Kalam", cursive;
+        font-size: 1.1rem;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+        margin-top: 15px;
+        font-weight: bold;
+        text-align: left;
+      }
+      .paper-select {
+        width: 100%;
+        padding: 8px 10px;
+        font-family: "Kalam", cursive;
+        font-size: 1.1rem;
+        border: 1px dashed #7f8c8d;
+        background: transparent;
+        color: #3e2723;
+        outline: none;
+        margin-bottom: 20px;
+        cursor: pointer;
+      }
+      .calories-box {
+        font-family: "Kalam", cursive;
+        font-size: 1.4rem;
+        color: #d35400;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-align: left;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        z-index: 5;
+      }
+      .qty-box {
+        width: 70px;
+        padding: 10px;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        border: 2px solid #333;
+        border-radius: 8px;
+        background: transparent;
+      }
+      .btn-order-now {
+        background: var(--brand-yellow);
+        color: var(--bg-burgundy-dark);
+        border: none;
+        padding: 12px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        transition: 0.2s;
+      }
+      .btn-order-now:hover {
+        background: var(--brand-yellow-dark);
+        transform: scale(1.05);
+      }
+
+      .back-sticker {
+        display: inline-block;
+        background: #ffeb3b;
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 10px 20px;
+        margin-top: 25px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        transform: rotate(1deg);
+        transition: 0.3s;
+        font-family: "Kalam", cursive;
+        font-size: 1.1rem;
+      }
+      .back-sticker:hover {
+        transform: rotate(0deg) scale(1.1);
+        background: #fff176;
+      }
+
+      .paper-footer-notes {
+        margin-top: 25px;
+        border-top: 1px dashed #7f8c8d;
+        padding-top: 15px;
+        text-align: left;
+      }
+      .notes-heading {
+        font-family: "Kalam", cursive;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #3e2723;
+        margin-bottom: 5px;
+      }
+      .note-handwritten {
+        font-family: "Kalam", cursive;
+        font-size: 1.1rem;
+        color: #5d4037;
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+      .note-budget {
+        font-family: "Kalam", cursive;
+        font-size: 1.1rem;
+        color: #27ae60;
+        font-weight: bold;
+        line-height: 1.3;
+      }
+      .note-budget.warning {
+        color: #c0392b !important;
+      }
+
+      .reviews-section {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 30px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .reviews-section h2 {
+        font-family: "Playfair Display", serif;
+        color: var(--brand-yellow);
+        margin-bottom: 30px;
+        border-bottom: 2px solid rgba(255, 179, 0, 0.3);
+        padding-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      #item-reviews-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+      }
+
+      @media (max-width: 900px) {
+        .table-setup {
+          flex-direction: column;
+        }
+        .food-plate {
+          width: 300px;
+          height: 300px;
+        }
+        .clipboard-wrapper {
+          width: 100%;
+        }
+      }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="table-setup">
+      <div class="plate-area">
+        <img src="" id="detail-img" class="food-plate" alt="Food Item" />
+      </div>
+
+      <div class="clipboard-wrapper">
+        <div class="board">
+          <div class="metal-clip"></div>
+          <div class="paper">
+            <span id="detail-cat" class="category-stamp">Category</span>
+            <h1 id="detail-title" class="handwritten-title">Loading...</h1>
+
+            <div id="detail-stars" style="color: #ffc107; font-size: 16px; margin-bottom: 15px;">
+              &#9734;&#9734;&#9734;&#9734;&#9734; <span style="color:#555; font-size:12px;">(0 reviews)</span>
+            </div>
+
+            <p id="detail-desc" class="paper-desc">Checking menu details...</p>
+
+            <span id="detail-price" class="price-box">Rs. 0</span>
+
+            <div class="size-config-wrap" style="text-align: left;">
+              <label for="detail-size" class="paper-select-label">Configure Serving Size</label>
+              <select id="detail-size" class="paper-select" onchange="onSizeChange()">
+                <option value="">Loading Variations...</option>
+              </select>
+            </div>
+
+            <div class="calories-box">
+              🔥 <span id="live-cal">0</span> Calories
+            </div>
+
+            <div class="controls">
+              <input
+                type="number"
+                id="detail-qty"
+                value="1"
+                min="1"
+                max="10"
+                class="qty-box"
+              />
+              <button class="btn-order-now" onclick="addCurrentItemToCart()">
+                ORDER NOW
+              </button>
+            </div>
+
+            <div class="paper-footer-notes" id="macro-box">
+              <div class="notes-heading"><i class="fas fa-robot"></i> AI Telemetry Notes:</div>
+              <p id="detail-ingredients" class="note-handwritten">Analyzing ingredients...</p>
+              <p id="budget-msg" class="note-budget">Sign in to observe real-time health profile telemetry.</p>
+            </div>
+
+            <a href="/user/menu" class="back-sticker">
+              <i class="fas fa-arrow-left"></i> Back to Menu
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reviews-section">
+      <h2>Customer Reviews</h2>
+      <div id="item-reviews-container">
+        <p style="color: #ccc; font-style: italic;">Loading reviews...</p>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlName = urlParams.get("name");
+  let currentItem = null;
+  let healthStats = null;
+  let selectedVariation = null;
+
+  window.addEventListener("load", loadItemDetails);
+
+  async function loadItemDetails() {
+    if (!urlName) {
+      alert("No item selected!");
+      window.location.href = "/user/menu";
+      return;
+    }
+    const email = localStorage.getItem("currentUser") || "";
+    const apiUrl = `/api/menu/item?name=${encodeURIComponent(urlName)}${email ? "&email=" + encodeURIComponent(email) : ""}`;
+
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      if (!data.success || !data.item) {
+        alert(data.message || "Item not found!");
+        window.location.href = "/user/menu";
+        return;
+      }
+      currentItem = data.item;
+      healthStats = {
+        consumed_calories: data.consumed_calories,
+        weekly_budget: data.weekly_budget,
+        remaining_budget: data.remaining_budget,
+        is_over_budget: data.is_over_budget,
+      };
+      renderItem();
+      loadItemReviews(currentItem.name);
+    } catch (e) {
+      console.error(e);
+      alert("Error connecting to server.");
+    }
+  }
+
+  function getImgSrc(item) {
+    let imgSrc = item.image_url;
+    if (imgSrc && !imgSrc.startsWith("http")) imgSrc = "/static/images/" + imgSrc;
+    else if (!imgSrc) imgSrc = "/static/images/default.jpg";
+    return imgSrc;
+  }
+
+  function renderItem() {
+    const item = currentItem;
+    document.getElementById("detail-cat").textContent = item.category || "Menu Item";
+    document.getElementById("detail-title").textContent = item.name;
+    document.getElementById("detail-desc").textContent =
+      item.description || "Freshly prepared. Enjoy the taste!";
+    document.getElementById("detail-ingredients").textContent =
+      item.ingredients || "Standard kitchen formulation.";
+
+    const rating = item.rating || 0;
+    const rc = item.review_count || 0;
+    const stars = "★".repeat(Math.round(rating)) + "☆".repeat(5 - Math.round(rating));
+    document.getElementById("detail-stars").innerHTML =
+      `${stars} <span style="color:#555; font-size:12px;">(${rc} reviews)</span>`;
+
+    document.getElementById("detail-img").src = getImgSrc(item);
+
+    const sizeSelect = document.getElementById("detail-size");
+    sizeSelect.innerHTML = "";
+    if (item.variations && item.variations.length > 0) {
+      item.variations.forEach((v, idx) => {
+        const opt = document.createElement("option");
+        opt.value = v.variation_id;
+        opt.textContent = `${v.variation_name} — Rs. ${v.price}`;
+        opt.dataset.price = v.price;
+        opt.dataset.calories = v.calories;
+        opt.dataset.vname = v.variation_name;
+        sizeSelect.appendChild(opt);
+        if (idx === 0) selectedVariation = v;
+      });
+    } else {
+      const opt = document.createElement("option");
+      opt.value = "std";
+      opt.textContent = "Standard serving";
+      opt.dataset.price = item.price || 0;
+      opt.dataset.calories = item.calories || 0;
+      opt.dataset.vname = "";
+      sizeSelect.appendChild(opt);
+    }
+    onSizeChange();
+  }
+
+  function onSizeChange() {
+    const sel = document.getElementById("detail-size");
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt) return;
+
+    const price = parseFloat(opt.dataset.price) || 0;
+    let cals = parseInt(opt.dataset.calories, 10);
+    if (!cals || cals <= 0) {
+      cals = parseInt(currentItem.calories, 10) || 0;
+    }
+
+    if (opt.value && opt.value !== "std") {
+      selectedVariation = {
+        variation_id: parseInt(opt.value, 10),
+        variation_name: opt.dataset.vname,
+        price: price,
+        calories: cals,
+      };
+    } else {
+      selectedVariation = { variation_id: null, variation_name: "", price: price, calories: cals };
+    }
+
+    document.getElementById("detail-price").textContent = "Rs. " + price;
+    document.getElementById("live-cal").textContent = cals;
+    updateBudgetMessage(cals);
+  }
+
+  function updateBudgetMessage(itemCalories) {
+    const msgEl = document.getElementById("budget-msg");
+    if (!healthStats || healthStats.weekly_budget == null) {
+      msgEl.textContent = "Sign in to see how this item fits your weekly calorie budget.";
+      msgEl.className = "note-budget";
+      return;
+    }
+    const remaining =
+      healthStats.remaining_budget ??
+      Math.max(0, healthStats.weekly_budget - (healthStats.consumed_calories || 0));
+    const pct = remaining > 0 ? Math.round((itemCalories / remaining) * 100) : 100;
+    msgEl.textContent = `This serving is ${itemCalories} kcal — about ${pct}% of your remaining weekly budget (${remaining} kcal left of ${healthStats.weekly_budget} kcal).`;
+    msgEl.className = healthStats.is_over_budget || pct > 45 ? "note-budget warning" : "note-budget";
+  }
+
+  function addCurrentItemToCart() {
+    if (!currentItem) return;
+    const qty = parseInt(document.getElementById("detail-qty").value, 10) || 1;
+    if (qty < 1) {
+      alert("Min qty is 1");
+      return;
+    }
+    const price = selectedVariation ? selectedVariation.price : 0;
+    const varId = selectedVariation ? selectedVariation.variation_id : null;
+    const varName = selectedVariation ? selectedVariation.variation_name : "";
+    const cartName = varName ? `${currentItem.name} (${varName})` : currentItem.name;
+
+    let cart = JSON.parse(localStorage.getItem("mySmartCart")) || [];
+    let found = cart.find(
+      (i) => i.item_id == currentItem.item_id && i.variation_id == varId
+    );
+    if (found) found.qty += qty;
+    else
+      cart.push({
+        item_id: currentItem.item_id,
+        variation_id: varId,
+        name: cartName,
+        price: price,
+        qty: qty,
+      });
+
+    localStorage.setItem("mySmartCart", JSON.stringify(cart));
+    alert(cartName + " added!");
+    if (typeof updateCartCount === "function") updateCartCount();
+  }
+
+  async function loadItemReviews(itemName) {
+    const container = document.getElementById("item-reviews-container");
+    try {
+      const res = await fetch("/api/reviews");
+      const data = await res.json();
+
+      if (data.success) {
+        const itemReviews = data.reviews.filter(
+          (r) =>
+            r.item_name &&
+            r.item_name.trim().toLowerCase() === itemName.trim().toLowerCase()
+        );
+
+        if (itemReviews.length === 0) {
+          container.innerHTML =
+            '<p style="color: #888; grid-column: 1/-1;">No reviews yet for this item.</p>';
+          return;
+        }
+
+        container.innerHTML = "";
+        itemReviews.forEach((r) => {
+          const stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+          container.innerHTML += `
+            <div style="background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border-left: 5px solid var(--brand-yellow);">
+              <div style="font-weight: bold; color: var(--bg-burgundy-dark); font-size: 1.2rem; margin-bottom: 8px;">${r.full_name || "Guest"}</div>
+              <div style="color: #fbc02d; font-size: 1.1rem; margin-bottom: 12px;">${stars} <span style="color: #555; font-size: 0.9rem; margin-left: 5px;">(${r.rating}/5)</span></div>
+              <p style="color: #444; font-style: italic; line-height: 1.6; margin: 0; font-size: 1.05rem;">"${r.comment}"</p>
+              <small style="color: #888; display: block; margin-top: 15px; border-top: 1px dotted #ccc; padding-top: 10px;">${r.created_at ? new Date(r.created_at).toLocaleDateString() : ""}</small>
+            </div>`;
+        });
+      } else {
+        container.innerHTML =
+          '<p style="color: red; grid-column: 1/-1;">Could not load reviews.</p>';
+      }
+    } catch (error) {
+      console.error("Error loading reviews:", error);
+      container.innerHTML =
+        '<p style="color: red; grid-column: 1/-1;">Failed to load reviews.</p>';
+    }
+  }
+</script>
+{% endblock %}

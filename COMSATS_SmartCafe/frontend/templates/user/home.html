@@ -1,0 +1,721 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Home - Smart Cafe{% endblock %}
+
+{% block styles %}
+<style>
+      body { background: #ffffff !important; }
+
+      /* --- HERO (reference design) --- */
+      .hero-section {
+        min-height: 480px;
+        position: relative;
+        text-align: center;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 0;
+      }
+      .hero-wave {
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        background: #fff;
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        z-index: 3;
+      }
+      .hero-slides {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .hero-slide {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        animation: heroFade 18s infinite;
+      }
+      .hero-slide:nth-child(1) { background-image: url("https://images.unsplash.com/photo-1615937657715-bc7b4b7962c1?q=80&w=1920&auto=format&fit=crop"); animation-delay: 0s; }
+      .hero-slide:nth-child(2) { background-image: url("https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1920&auto=format&fit=crop"); animation-delay: 6s; }
+      .hero-slide:nth-child(3) { background-image: url("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1920&auto=format&fit=crop"); animation-delay: 12s; }
+      @keyframes heroFade {
+        0%, 28% { opacity: 1; transform: scale(1); }
+        33%, 100% { opacity: 0; transform: scale(1.05); }
+      }
+      .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(20,0,5,0.55) 0%, rgba(59,0,13,0.85) 100%);
+        z-index: 1;
+      }
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 80px 20px 100px;
+        max-width: 800px;
+      }
+      .main-heading {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.2rem, 5vw, 3.8rem);
+        color: white;
+        text-transform: capitalize;
+        margin-bottom: 12px;
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .hero-sub {
+        color: rgba(255,255,255,0.92);
+        font-size: 1.05rem;
+        font-weight: 400;
+      }
+
+      /* --- MENU (white section, maroon horizontal cards) --- */
+      .menu-section {
+        padding: 30px 20px 60px;
+        text-align: center;
+        background: #ffffff;
+      }
+      .section-title {
+        font-size: 2rem;
+        color: #222;
+        margin-bottom: 35px;
+        font-weight: 800;
+        font-family: "Poppins", sans-serif;
+      }
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      @media (max-width: 1100px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .menu-grid { grid-template-columns: 1fr; } }
+
+      .food-card {
+        background: #4a0404;
+        border-radius: 14px;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        text-align: left;
+        color: white;
+        min-height: 110px;
+        box-shadow: 0 6px 20px rgba(74,4,4,0.25);
+      }
+      .food-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(74,4,4,0.35);
+      }
+      .food-card .fc-img-wrap {
+        width: 100px;
+        min-width: 100px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .food-card .fc-img-wrap img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      .food-card .fc-body {
+        flex: 1;
+        padding: 12px 12px 12px 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+      }
+      .food-card .card-title {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 4px;
+        text-transform: capitalize;
+        cursor: pointer;
+      }
+      .food-card .fc-stars {
+        color: #ffd700;
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+      }
+      .food-card .fc-stars span { color: rgba(255,255,255,0.75); font-size: 0.7rem; }
+      .food-card .fc-price {
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .food-card .fc-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: auto;
+      }
+      .food-card .size-dropdown {
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        max-width: 90px;
+      }
+      .food-card .btn-add {
+        background: #ffd700;
+        color: #111;
+        border: none;
+        padding: 8px 18px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        transition: 0.2s;
+        white-space: nowrap;
+      }
+      .food-card .btn-add:hover { background: #ffea00; transform: scale(1.05); }
+      .food-card.ai-card {
+        border: 2px solid #28a745;
+        position: relative;
+      }
+      .food-card .ai-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #28a745;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 0 12px 0 8px;
+        z-index: 2;
+      }
+      .btn-view-menu {
+        display: inline-block;
+        background: #222;
+        color: white;
+        padding: 14px 40px;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-top: 40px;
+        transition: 0.25s;
+      }
+      .btn-view-menu:hover { background: #4a0404; color: #ffd700; }
+
+      /* REVIEWS SECTION */
+      .reviews-section {
+        padding: 50px 20px;
+        background: #eeeded;
+        text-align: center;
+        margin-top: 40px;
+      }
+      .review-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 20px;
+        padding: 20px 0;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .review-grid::-webkit-scrollbar {
+        display: none;
+      }
+      .home-review-card {
+        min-width: 300px;
+        background: #4d1111;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        text-align: left;
+        border: 1px solid #f4e6e6;
+      }
+      .hr-user {
+        font-weight: bold;
+        color: #ffffff !important;
+        font-size: 1.1rem;
+      }
+      .hr-stars {
+        color: #fbc02d;
+        font-size: 0.9rem;
+        margin: 5px 0;
+      }
+      .hr-text {
+        color: #f3e7e7;
+        font-size: 0.95rem;
+        font-style: italic;
+        line-height: 1.5;
+        max-height: 80px;
+        overflow: hidden;
+      }
+      .hr-item {
+        font-size: 0.8rem;
+        color: #f8f3f3;
+        margin-top: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* CALORIE BUDGET METER */
+      .calorie-meter-section {
+        max-width: 1200px;
+        margin: -40px auto 30px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 5;
+        display: none;
+      }
+      .calorie-meter-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 10px 30px rgba(74,4,4,0.12);
+        border: 2px solid #4a0404;
+      }
+      .calorie-meter-card.safe { border-color: #28a745; }
+      .calorie-meter-card.warning { border-color: #dc3545; background: #fff8f8; }
+      .meter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .meter-title { font-size: 1.3rem; font-weight: 800; color: #3b000d; }
+      .meter-status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .meter-status-badge.safe { background: #d4edda; color: #155724; }
+      .meter-status-badge.warning { background: #f8d7da; color: #721c24; }
+      .meter-bar-wrap {
+        height: 22px;
+        background: #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .meter-bar-fill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 0.8s ease, background 0.4s;
+      }
+      .meter-bar-fill.safe { background: linear-gradient(90deg, #28a745, #5cb85c); }
+      .meter-bar-fill.warning { background: linear-gradient(90deg, #dc3545, #e74c3c); }
+      .meter-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.95rem;
+        color: #555;
+        font-weight: 600;
+      }
+
+      /* AI RECOMMENDATIONS SECTION */
+      .ai-rec-section {
+        padding: 40px 20px;
+        background: #fafafa;
+        border-top: 1px solid #eee;
+      }
+      .ai-rec-section .section-title {
+        font-family: 'Playfair Display', serif;
+        color: #4a0404;
+        font-size: 2rem;
+        margin-bottom: 8px;
+      }
+      .ai-rec-subtitle { color: #666; margin-bottom: 30px; font-size: 0.95rem; }
+
+      /* REVIEWS CAROUSEL - DARK MAROON */
+      .reviews-section {
+        padding: 50px 20px;
+        background: linear-gradient(135deg, #3b000d 0%, #540d17 50%, #2a0008 100%);
+        text-align: center;
+        margin-top: 40px;
+      }
+      .reviews-section .section-title { color: #ffb300; }
+      .review-carousel-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        overflow: hidden;
+        position: relative;
+      }
+      .review-grid {
+        display: flex;
+        gap: 20px;
+        animation: reviewScroll 40s linear infinite;
+        width: max-content;
+      }
+      .review-grid:hover { animation-play-state: paused; }
+      @keyframes reviewScroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+      <div class="hero-slides">
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1 class="main-heading">Tasty And Healthy</h1>
+        <p class="hero-sub">Fresh from our kitchen to your table.</p>
+      </div>
+      <div class="hero-wave"></div>
+    </div>
+
+    <section class="calorie-meter-section" id="calorie-meter-section">
+      <div class="calorie-meter-card" id="calorie-meter-card">
+        <div class="meter-header">
+          <span class="meter-title">🤖 AI Calorie Budget Meter</span>
+          <span class="meter-status-badge" id="meter-status-badge">Loading...</span>
+        </div>
+        <div class="meter-bar-wrap">
+          <div class="meter-bar-fill" id="meter-bar-fill" style="width: 0%"></div>
+        </div>
+        <div class="meter-stats">
+          <span>Consumed: <strong id="meter-consumed">0</strong> kcal</span>
+          <span>Remaining: <strong id="meter-remaining">0</strong> kcal</span>
+          <span>Budget: <strong id="meter-budget">14000</strong> kcal / week</span>
+        </div>
+        <p id="meter-alert-text" style="margin: 14px 0 0; font-size: 0.9rem; color: #666;"></p>
+      </div>
+    </section>
+
+    <section class="ai-rec-section" id="health-alert-section" style="display: none;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 class="section-title">🥗 AI Personal Health Recommendations</h2>
+        <p class="ai-rec-subtitle" id="ai-rec-subtitle">Smart picks based on your order history and weekly calorie budget.</p>
+        <div class="menu-grid" id="health-recommendations-grid"></div>
+        <h2 class="section-title" style="margin-top: 50px; font-size: 1.6rem;">Your Past Favorites</h2>
+        <div class="menu-grid" id="past-recommendations-grid" style="margin-top: 20px;"></div>
+      </div>
+    </section>
+
+
+    <div class="menu-section">
+      <h2 class="section-title">Fresh From Kitchen</h2>
+      <div class="menu-grid" id="regular-menu">
+        <div style="width: 100%; text-align: center; padding: 20px; grid-column: 1/-1;">
+          <i class="fas fa-spinner fa-spin fa-2x"></i><br />Loading Menu...
+        </div>
+      </div>
+
+      <div style="margin-top: 40px">
+        <a href="/user/menu" class="btn-view-menu">View Full Menu</a>
+      </div>
+    </div>
+
+    <div class="reviews-section">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <div class="review-carousel-wrap">
+          <div class="review-grid" id="home-reviews">
+              <p style="width: 100%; text-align: center; color: #ccc;">Loading reviews...</p>
+          </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      // Automatically Load Data
+      fetchHealthAlert();
+      fetchRegularMenu();
+      fetchHomeReviews();
+
+      // 1. HEALTH ALERT, CALORIE METER & AI RECOMMENDATIONS
+      async function fetchHealthAlert() {
+        const email = localStorage.getItem("currentUser");
+        if(!email) return;
+
+        try {
+          const res = await fetch("/api/user/health_alert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email })
+          });
+          const data = await res.json();
+          
+          if(data.success) {
+             const meterSec = document.getElementById("calorie-meter-section");
+             const meterCard = document.getElementById("calorie-meter-card");
+             const meterBadge = document.getElementById("meter-status-badge");
+             const meterBar = document.getElementById("meter-bar-fill");
+             const alertSec = document.getElementById("health-alert-section");
+             const pastGrid = document.getElementById("past-recommendations-grid");
+             const healthGrid = document.getElementById("health-recommendations-grid");
+             const aiSubtitle = document.getElementById("ai-rec-subtitle");
+
+             if(meterSec) meterSec.style.display = "block";
+             alertSec.style.display = "block";
+
+             const pct = data.budget_percent || Math.min(100, Math.round((data.consumed_calories / data.weekly_budget) * 100));
+             document.getElementById("meter-consumed").textContent = data.consumed_calories;
+             document.getElementById("meter-remaining").textContent = data.remaining_budget ?? Math.max(0, data.weekly_budget - data.consumed_calories);
+             document.getElementById("meter-budget").textContent = data.weekly_budget;
+             document.getElementById("meter-alert-text").textContent = data.alert_message;
+             meterBar.style.width = pct + "%";
+
+             if(data.is_over_budget) {
+                meterCard.className = "calorie-meter-card warning";
+                meterBadge.className = "meter-status-badge warning";
+                meterBadge.textContent = "⚠️ Warning Alert";
+                meterBar.className = "meter-bar-fill warning";
+                if(aiSubtitle) aiSubtitle.textContent = "Budget critical — burger/pizza blocked. Only healthy options shown below.";
+             } else {
+                meterCard.className = "calorie-meter-card safe";
+                meterBadge.className = "meter-status-badge safe";
+                meterBadge.textContent = "✅ Safe Status";
+                meterBar.className = "meter-bar-fill safe";
+                if(aiSubtitle) aiSubtitle.textContent = "Personalized picks based on your order history and remaining weekly budget.";
+             }
+
+             const healthItems = data.health_recommendations || data.recommendations || [];
+             healthGrid.innerHTML = "";
+             if(healthItems.length > 0) {
+                healthItems.slice(0, 6).forEach(item => { healthGrid.innerHTML += createAICard(item); });
+             } else {
+                healthGrid.innerHTML = "<p style='color:#777; grid-column:1/-1;'>No healthy options found.</p>";
+             }
+
+             pastGrid.innerHTML = "";
+             if(data.past_recommendations && data.past_recommendations.length > 0) {
+                data.past_recommendations.slice(0, 4).forEach(item => { pastGrid.innerHTML += createCard(item); });
+             } else {
+                pastGrid.innerHTML = "<p style='color:#777; grid-column:1/-1;'>No order history yet.</p>";
+             }
+          }
+        } catch(err) {
+          console.error("Health Alert Error", err);
+        }
+      }
+
+      // 2. REGULAR GENERAL MENU
+      async function fetchRegularMenu() {
+        const grid = document.getElementById("regular-menu");
+        try {
+          const response = await fetch("/api/menu");
+          const data = await response.json();
+
+          if (data.success) {
+            grid.innerHTML = "";
+            
+            data.menu.sort((a, b) => {
+               const rCountA = a.review_count || 0;
+               const rCountB = b.review_count || 0;
+               if (rCountB !== rCountA) return rCountB - rCountA;
+               return (b.rating || 0) - (a.rating || 0);
+            });
+            
+            const topItems = data.menu.slice(0, 8);
+            if (topItems.length === 0) {
+              grid.innerHTML = "<p>No items available in menu.</p>";
+              return;
+            }
+            topItems.forEach((item) => {
+              grid.innerHTML += createCard(item);
+            });
+          }
+        } catch (error) {
+          console.error("Menu Error:", error);
+          grid.innerHTML = "<p style='grid-column: 1/-1; color:red;'>Server is not responding. Please restart app.py</p>";
+        }
+      }
+
+      
+      function buildMenuCard(item, isAI) {
+        let imgSrc = item.image_url;
+        if (!imgSrc || !imgSrc.startsWith("http")) {
+          imgSrc = imgSrc ? `/static/images/${imgSrc}` : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+        }
+        const defaultImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+        const rating = item.rating || 0;
+        const starsHtml = "★".repeat(Math.round(rating)) + "☆".repeat(5 - Math.round(rating));
+        const uniqueId = (isAI ? 'ai_' : 'card_') + Math.floor(Math.random()*10000) + '_' + item.item_id;
+        const detailUrl = `/user/food_detail?name=${encodeURIComponent(item.name)}`;
+        let initialPrice = 'N/A', initialCals = '0', initialVarId = 'null', defaultVarName = '';
+        let varsDropdown = '';
+
+        if (item.variations && item.variations.length > 0) {
+          const options = item.variations.map((v, idx) => {
+            if (idx === 0) {
+              initialPrice = v.price; initialCals = v.calories;
+              initialVarId = v.variation_id; defaultVarName = v.variation_name;
+            }
+            return `<option value="${v.variation_id}" data-price="${v.price}" data-calories="${v.calories}" data-vname="${v.variation_name}">${v.variation_name}</option>`;
+          }).join('');
+          varsDropdown = `<select class="size-dropdown" onchange="updateCardUI(this, '${uniqueId}')">${options}</select>`;
+        }
+
+        const aiBadge = isAI ? '<span class="ai-badge">🥗 AI</span>' : '';
+        const cardClass = isAI ? 'food-card ai-card' : 'food-card';
+
+        return `
+          <div class="${cardClass}" id="${uniqueId}">
+            ${aiBadge}
+            <div class="fc-img-wrap" onclick="window.location.href='${detailUrl}'">
+              <img src="${imgSrc}" alt="${item.name}" onerror="this.src='${defaultImg}'">
+            </div>
+            <div class="fc-body">
+              <div>
+                <h4 class="card-title" onclick="window.location.href='${detailUrl}'">${item.name}</h4>
+                <div class="fc-stars">${starsHtml} <span>(${item.review_count || 0} reviews)</span></div>
+              </div>
+              <div class="fc-meta">
+                <div>
+                  <div class="fc-price">Rs. <span class="card-price">${initialPrice}</span></div>
+                  ${varsDropdown}
+                  <span class="card-calories" style="display:none">${initialCals}</span>
+                </div>
+                <button type="button" class="btn-add" onclick="addFromDropdown('${uniqueId}', '${item.item_id}', '${item.name.replace(/'/g, "\\'")}', ${item.variations && item.variations.length > 0})">ADD</button>
+              </div>
+              <input type="hidden" class="hidden-vid" value="${initialVarId}">
+              <input type="hidden" class="hidden-vname" value="${defaultVarName}">
+              <input type="hidden" class="hidden-price" value="${initialPrice}">
+            </div>
+          </div>`;
+      }
+
+      function createAICard(item) { return buildMenuCard(item, true); }
+      function createCard(item) { return buildMenuCard(item, false); }
+
+
+      // 5. LIVE DROPDOWN CONTROLLER STATE CHANGE
+      function updateCardUI(selectElem, cardId) {
+          let card = document.getElementById(cardId);
+          if (!card) return;
+          let selectedOption = selectElem.options[selectElem.selectedIndex];
+          let price = selectedOption.getAttribute('data-price');
+          let cals = selectedOption.getAttribute('data-calories');
+          let vname = selectedOption.getAttribute('data-vname');
+          let vid = selectedOption.value;
+          
+          card.querySelector('.card-price').innerText = price;
+          card.querySelector('.card-calories').innerText = cals;
+          card.querySelector('.hidden-price').value = price;
+          card.querySelector('.hidden-vid').value = vid;
+          card.querySelector('.hidden-vname').value = vname;
+      }
+
+      function addFromDropdown(cardId, itemId, itemName, hasVars) {
+          let card = document.getElementById(cardId);
+          let price = card.querySelector('.hidden-price').value;
+          let varId = null;
+          let varName = '';
+          if(hasVars) {
+             varId = card.querySelector('.hidden-vid').value;
+             varName = card.querySelector('.hidden-vname').value;
+          }
+          addDirectVarToCart(itemId, itemName, varId, varName, price);
+      }
+
+      function addDirectVarToCart(itemId, itemName, varId, varName, price) {
+          let cart = JSON.parse(localStorage.getItem("mySmartCart")) || [];
+          let found = cart.find((i) => i.item_id == itemId && i.variation_id == varId);
+          if (found) {
+              found.qty++;
+          } else {
+              let cartName = varName ? `${itemName} (${varName})` : itemName;
+              cart.push({ item_id: itemId, variation_id: varId, name: cartName, price: price, qty: 1 });
+          }
+          localStorage.setItem("mySmartCart", JSON.stringify(cart));
+          alert(itemName + " successfully added to your cart!");
+          if(typeof updateCartCount === 'function') updateCartCount();
+      }
+
+      // 6. GLOBAL FEEDBACK REVIEWS LOOP
+      async function fetchHomeReviews() {
+        const container = document.getElementById("home-reviews");
+        try {
+            const res = await fetch("/api/reviews");
+            const data = await res.json();
+            
+            if (data.success) {
+                if (data.reviews.length === 0) {
+                    container.innerHTML = '<p style="width: 100%; text-align: center; color: #888;">No reviews recorded yet.</p>';
+                    return;
+                }
+                
+                const buildReviewCard = (r) => {
+                    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                    const itemName = r.item_name ? `Ordered: ${r.item_name}` : "General Review";
+                    const itemLink = r.item_name ? `onclick="window.location.href='/user/food_detail?name=${encodeURIComponent(r.item_name)}'"` : "";
+                    const cursorStyle = r.item_name ? "cursor: pointer;" : "";
+                    return `
+                        <div class="home-review-card" ${itemLink} style="${cursorStyle} transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="hr-user" style="color: #fff !important; font-weight:bold;">${r.full_name || "Guest User"}</div>
+                            <div class="hr-stars">${stars}</div>
+                            <p class="hr-text">"${r.comment}"</p>
+                            <div class="hr-item" style="color: #ffb300; font-weight: bold; font-size:11px;">${itemName}</div>
+                        </div>`;
+                };
+                container.innerHTML = "";
+                [...data.reviews, ...data.reviews].forEach(r => { container.innerHTML += buildReviewCard(r); });
+            }
+        } catch(error) {
+            console.error(error);
+            container.innerHTML = '<p style="width: 100%; text-align: center; color: red;">Failed to load server reviews.</p>';
+        }
+      }
+
+      // 7. MODAL DETAILED INGREDIENTS CONTROLLER
+      function openDetailModal(itemStr) {
+          try {
+              let item = JSON.parse(decodeURIComponent(itemStr));
+              document.getElementById('modal-title').innerText = item.name;
+              
+              let imgSrc = item.image_url;
+              if (!imgSrc || !imgSrc.startsWith("http")) {
+                 imgSrc = imgSrc ? `../../static/images/${imgSrc}` : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500";
+              }
+              document.getElementById('modal-img').src = imgSrc;
+              document.getElementById('modal-desc').innerText = item.description || 'No custom description provided.';
+              document.getElementById('modal-ingredients').innerText = item.ingredients || 'Nutritional breakdown is being calibrated.';
+              
+              document.getElementById('detail-modal').style.display = 'flex';
+          } catch(e) {
+              console.error(e);
+          }
+      }
+
+      function closeDetailModal() {
+          document.getElementById('detail-modal').style.display = 'none';
+      }
+    </script>
+    
+    <div id="detail-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+        <div style="background:#fff; border-radius:20px; width:90%; max-width:480px; padding:25px; position:relative; max-height:85vh; overflow-y:auto; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+            <button onclick="closeDetailModal()" style="position:absolute; top:15px; right:15px; background:#f8f9fa; color:#333; border:none; border-radius:50%; width:32px; height:32px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.1);">✕</button>
+            <img id="modal-img" src="" style="width:100%; height:220px; object-fit:cover; border-radius:15px; margin-bottom:15px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 id="modal-title" style="color:#540d17; margin-top:0; margin-bottom:10px; font-family:'Playfair Display',serif; text-transform:capitalize; font-weight:800;">Item Name</h2>
+            <p id="modal-desc" style="color:#666; font-size:14px; line-height:1.6; margin-bottom:20px;">Description</p>
+            <div style="background:#f8f9fa; padding:15px; border-radius:12px; border:1px solid #eef2f5;">
+                <h5 style="color:#251316; margin-top:0; margin-bottom:8px; font-weight:bold; display:flex; align-items:center; gap:6px;">🥗 Macro Nutritional Breakdown:</h5>
+                <p id="modal-ingredients" style="color:#444; font-size:13px; margin:0; font-style:italic; line-height:1.5;">Ingredients list</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

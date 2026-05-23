@@ -1,0 +1,292 @@
+{% extends "user/layout.html" %} {% block title %}My Cart - Smart Cafe{%
+endblock %} {% block styles %}
+<style>
+  :root {
+    --text-dark: var(--brand-black);
+    --text-light: #666;
+    --danger: #d32f2f;
+    --success: #2e7d32;
+  }
+  body {
+    /* BACKGROUND IMAGE Override */
+    background:
+      linear-gradient(rgba(59, 0, 13, 0.85), rgba(59, 0, 13, 0.85)),
+      url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--text-dark);
+  }
+
+  /* --- CART CONTENT --- */
+  .cart-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 50px 20px;
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.95); /* White Box */
+    width: 100%;
+    max-width: 1000px;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  }
+
+  .page-title {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    color: var(--primary);
+    font-weight: 700;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+  }
+
+  /* Table Styles */
+  .table-container {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
+  th,
+  td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+  }
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+
+  /* Buttons & Text */
+  .total-price {
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    padding-right: 10px;
+  }
+
+  .cart-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .btn-continue {
+    text-decoration: none;
+    color: var(--text-light);
+    font-weight: 600;
+    transition: 0.3s;
+  }
+  .btn-continue:hover {
+    color: var(--primary);
+  }
+
+  .btn-danger {
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.3s;
+  }
+  .btn-danger:hover {
+    background-color: #b71c1c;
+  }
+
+  .checkout-btn {
+    background-color: var(--success);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+  }
+  .checkout-btn:hover {
+    background-color: #1b5e20;
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="cart-wrapper">
+  <div class="container">
+    <h2 class="page-title">Your Shopping Cart</h2>
+
+    <div class="table-container">
+      <table id="cart-table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="cart-body"></tbody>
+      </table>
+
+      <div class="total-price" id="grand-total">Grand Total: Rs. 0</div>
+
+      <div class="cart-actions">
+        <a href="/user/home" class="btn-continue">← Continue Shopping</a>
+        <div style="display: flex; gap: 10px">
+          <button
+            onclick="clearCart()"
+            class="btn-danger"
+            style="padding: 12px 20px"
+          >
+            Clear Cart
+          </button>
+          <button onclick="proceedToCheckout()" class="checkout-btn">
+            Proceed to Checkout →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  window.addEventListener("load", function () {
+    loadCart();
+  });
+
+  function loadCart() {
+    let cart = localStorage.getItem("mySmartCart");
+    let tbody = document.getElementById("cart-body");
+    let grandTotalEl = document.getElementById("grand-total");
+    let cartCountEl = document.getElementById("cart-count");
+
+    tbody.innerHTML = "";
+    let grandTotal = 0;
+    let totalQty = 0;
+
+    if (cart) {
+      let items = JSON.parse(cart);
+      if (items.length === 0) {
+        tbody.innerHTML =
+          "<tr><td colspan='5' style='text-align:center; padding: 30px; color: #666;'>Cart is Empty</td></tr>";
+      }
+      items.forEach((item, index) => {
+        let total = item.price * item.qty;
+        grandTotal += total;
+        totalQty += item.qty;
+        let row = `<tr>
+    <td>${item.name}</td>
+    <td>Rs. ${item.price}</td>
+    <td>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <button onclick="changeQty(${index}, -1)" 
+                    style="background:#ff4d4d; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer; font-weight:bold;">
+                -
+            </button>
+            <span style="font-weight: 600; min-width: 20px; display: inline-block;">${item.qty}</span>
+            <button onclick="changeQty(${index}, 1)" 
+                    style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">
+                +
+            </button>
+        </div>
+    </td>
+    <td>Rs. ${total}</td>
+    <td>
+        <button class="btn-danger" onclick="removeItem(${index})">
+            <i class="fas fa-trash"></i> Remove
+        </button>
+    </td>
+</tr>`;
+        tbody.innerHTML += row;
+      });
+    } else {
+      tbody.innerHTML =
+        "<tr><td colspan='5' style='text-align:center; padding: 30px; color: #666;'>Cart is Empty</td></tr>";
+    }
+    grandTotalEl.innerText = "Grand Total: Rs. " + grandTotal;
+    if (cartCountEl) cartCountEl.innerText = totalQty;
+  }
+
+  function removeItem(index) {
+    // Confirmation Dialog
+    if (confirm("Are you sure you want to remove this item from your cart?")) {
+      let cart = JSON.parse(localStorage.getItem("mySmartCart"));
+      
+      // Item delete karna
+      cart.splice(index, 1);
+      
+      // LocalStorage update karna
+      localStorage.setItem("mySmartCart", JSON.stringify(cart));
+      
+      // UI refresh karna
+      loadCart();
+      
+      // Agar navbar mein count function hai toh usay update karna
+      if (typeof updateCartCount === "function") {
+        updateCartCount();
+      }
+    }
+  }
+
+  function clearCart() {
+    if (confirm("Are you sure you want to clear the cart?")) {
+      localStorage.removeItem("mySmartCart");
+      loadCart();
+    }
+  }
+
+  function proceedToCheckout() {
+    let email = localStorage.getItem("currentUser");
+    if (!email) {
+      alert("⚠️ Please Login to place an order!");
+      window.location.href = "/user/login";
+      return;
+    }
+    window.location.href = "/user/checkout";
+  }
+  function changeQty(index, delta) {
+    let cart = JSON.parse(localStorage.getItem("mySmartCart"));
+
+    if (cart && cart[index]) {
+      cart[index].qty += delta;
+
+      // Agar quantity 1 se kam ho jaye toh item remove kar do
+      if (cart[index].qty < 1) {
+        if (confirm("Do you want to remove this item from the cart?")) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].qty = 1; // Wapis 1 par le aao
+        }
+      }
+    }
+
+    localStorage.setItem("mySmartCart", JSON.stringify(cart));
+    loadCart(); // UI ko refresh karne ke liye
+
+    // Global navbar count ko update karne ke liye (agar function available hai)
+    if (typeof updateCartCount === "function") {
+      updateCartCount();
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard" class="active"><i>📊</i> Dashboard</a>
+
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Dashboard Overview</h2>
+
+      <div class="stats-grid">
+        <div class="card bg-blue">
+          <p>Total Orders</p>
+          <h3 id="total-orders">0</h3>
+        </div>
+
+        <div class="card bg-green">
+          <p>Revenue Today</p>
+          <h3 id="total-revenue">Rs. 0</h3>
+        </div>
+
+        <div class="card bg-yellow">
+          <p>Pending Orders</p>
+          <h3 id="pending-orders">0</h3>
+        </div>
+
+        <div class="card bg-cyan">
+          <p>New Users</p>
+          <h3 id="total-users">0</h3>
+        </div>
+      </div>
+
+      <div class="table-title">Recent Orders</div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th style="text-align: center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+
+      window.onload = function () {
+        loadDashboard();
+
+        setInterval(() => {
+          loadDashboard(true);
+        }, 5000);
+      };
+
+      async function loadDashboard(isPolling = false) {
+        const tbody = document.getElementById("orders-body");
+        if (!isPolling) {
+          tbody.innerHTML =
+            "<tr><td colspan='5' style='text-align:center; padding:20px;'>Loading...</td></tr>";
+        }
+
+        try {
+          // --- 1. Load stats from backend ---
+          const statsRes = await fetch("http://127.0.0.1:5000/api/admin/stats");
+          const stats = await statsRes.json();
+          if (statsRes.ok) {
+            document.getElementById("total-orders").innerText =
+              stats.total_orders || 0;
+            document.getElementById("pending-orders").innerText =
+              stats.pending || 0;
+            document.getElementById("total-revenue").innerText =
+              "Rs. " + (stats.revenue || 0);
+            document.getElementById("total-users").innerText =
+              stats.users || 0;
+          }
+
+          // --- 2. Load recent orders from backend ---
+          const ordersRes = await fetch(ADMIN_API_BASE + "/orders");
+          const data = await ordersRes.json();
+
+          tbody.innerHTML = "";
+
+          if (!data.success || !data.orders || data.orders.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='5' style='text-align:center; padding:20px;'>No orders found.</td></tr>";
+            return;
+          }
+
+          data.orders.forEach((order) => {
+            let badgeClass = "status-pending";
+            if (order.status === "Completed" || order.status === "Ready")
+              badgeClass = "status-completed";
+            if (order.status === "Cancelled") badgeClass = "status-cancelled";
+            if (order.status === "Cooking") badgeClass = "status-cooking";
+
+            const totalText = "Rs. " + (order.total_amount || 0);
+
+            let payText = order.payment_method || "-";
+            if (order.payment_method === "JazzCash") {
+              payText += order.transaction_id ? ` (TID: ${order.transaction_id})` : " (TID: -)";
+            }
+            const remaining = order.payment_status === "Paid" ? 0 : (order.total_amount || 0);
+            let payBadge =
+              order.payment_status === "Paid"
+                ? `<span class="badge status-completed">Paid</span>`
+                : `<span class="badge status-pending">Pending</span>`;
+
+            let row = `
+              <tr>
+                <td style="color:#ccc; font-weight:bold;">#${order.order_id}<br><small>${order.created_at}</small></td>
+                <td>${order.full_name || "User"}<br><small>${order.phone || "-"}</small></td>
+                <td><span class="badge ${badgeClass}">${order.status}</span></td>
+                <td>${totalText}</td>
+                <td>${payBadge}<br><small>${payText}<br>Remaining: Rs. ${remaining}</small></td>
+                <td style="text-align: center;">
+                  <button class="btn-view" onclick="window.location.href='/admin/order_details?id=${order.order_id}'">View</button>
+                </td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        } catch (e) {
+          console.error("Dashboard load error:", e);
+          tbody.innerHTML =
+            "<tr><td colspan='5' style='text-align:center; padding:20px; color:red;'>Error loading orders (Run app.py)</td></tr>";
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to Logout?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

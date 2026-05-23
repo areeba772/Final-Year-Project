@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Smart Cafe{% endblock %}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Montserrat:wght@400;500;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-burgundy-light: #61001a;
+        --bg-burgundy-dark: #3b000d;
+        --brand-yellow: #ffb300;
+        --brand-yellow-dark: #e59f00;
+        --brand-black: #111111;
+        --brand-grey: #1e1e1e;
+        --text-light: #f5f5f5;
+        --primary: var(--brand-yellow);
+        --dark-bg: var(--brand-grey);
+        --footer-bg: #333333;
+        --footer-bottom: #222222;
+        --footer-text: #cccccc;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f9f9f9;
+        /* Default background, can be overridden */
+      }
+
+      /* --- NAVBAR --- */
+      .navbar {
+        background: var(--bg-burgundy-dark);
+        padding: 15px 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(99, 7, 7, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      .logo {
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo img {
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid white;
+      }
+
+.nav-links {
+  display: flex;
+  gap: 20px; /* Spacing between links */
+}
+
+/* Saaray links hamesha white rahenge */
+.nav-links a {
+    color: white !important; /* Force white color for all links */
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s;
+    border-bottom: 2px solid transparent; /* Taake jump na kare layout */
+}
+
+/* Hover effect */
+.nav-links a:hover {
+    color: #ffe0b2 !important;
+}
+
+/* Active Page (Jo page open hai) hamesha Golden rahega */
+.nav-links a.active {
+    color: #ffd54f !important; /* Golden Yellow */
+    border-bottom: 2px solid #ffd54f;
+    padding-bottom: 5px;
+}
+
+/* Active Indicator (Border) - Added for clearer visibility */
+/* This creates the bottom border only when active, centered under the text */
+.nav-links a.active::after {
+  content: '';
+  position: absolute;
+  left: 15%; /* Center the border under the text */
+  bottom: 5px; /* Position it below the text */
+  width: 70%; /* Border width relative to text */
+  height: 3px; /* Thickness of the border */
+  background-color: var(--primary); /* Golden yellow border */
+  border-radius: 2px;
+}
+      .btn-cart {
+    color: white !important;
+    font-weight: bold;
+    margin-right: 15px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-cart:hover {
+    color: var(--brand-yellow) !important;
+    transform: scale(1.1); /* Hover par thora bara hoga */
+}
+     /* Logout Button Update */
+.btn-logout {
+    background: white;
+    color: var(--bg-burgundy-dark) !important; /* Maroon text on white button */
+    padding: 5px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+    transition: 0.3s;
+    border: 2px solid white;
+}
+
+.btn-logout:hover {
+    background: transparent;
+    color: var(--brand-yellow) !important;
+    border: 2px solid var(--brand-yellow);
+}
+
+.btn-help {
+    background: transparent;
+    color: var(--brand-yellow) !important;
+    padding: 5px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+    transition: 0.3s;
+    border: 2px solid var(--brand-yellow);
+    margin-right: 10px;
+}
+
+.btn-help:hover {
+    background: var(--brand-yellow);
+    color: var(--bg-burgundy-dark) !important;
+}
+
+      /* --- FOOTER (attractive update) --- */
+      /* --- FOOTER (Complex Layout) --- */
+      .big-footer {
+        background-color: var(--bg-burgundy-dark);
+        color: var(--footer-text);
+        font-family: 'Montserrat', sans-serif;
+        border-top: 2px solid var(--brand-yellow);
+      }
+
+      .footer-top {
+        padding: 70px 5vw;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 2fr;
+        gap: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .footer-col h4 {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        position: relative;
+      }
+
+      .footer-col h4::after {
+        content: '';
+        position: absolute;
+        left: 0; bottom: -8px; width: 40px; height: 2px;
+        background: repeating-linear-gradient(to right, #fff 0, #fff 5px, transparent 5px, transparent 8px);
+      }
+
+      .footer-logo {
+        font-family: 'Permanent Marker', cursive;
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 20px;
+        display: inline-block;
+        letter-spacing: 1px;
+      }
+
+      .footer-col > p {
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        color: var(--text-light);
+      }
+
+      .footer-socials { display: flex; gap: 10px; }
+      .footer-socials a {
+        width: 32px; height: 32px; border-radius: 50%;
+        background-color: #fff; color: var(--bg-burgundy-dark);
+        display: flex; align-items: center; justify-content: center;
+        text-decoration: none; font-size: 0.9rem; transition: background 0.3s;
+      }
+      .footer-socials a:hover { background-color: var(--brand-yellow); color: #fff; }
+
+      .footer-links-list { list-style: none; }
+      .footer-links-list li { margin-bottom: 12px; }
+      .footer-links-list a {
+        color: var(--text-light);
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s;
+      }
+      .footer-links-list a::before {
+        content: '\2192'; /* right arrow */
+        font-size: 0.9rem; transition: margin-left 0.3s;
+      }
+      .footer-links-list a:hover { color: var(--brand-yellow); }
+      .footer-links-list a:hover::before { margin-left: 5px; }
+
+      /* Contacts Column */
+      .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .contact-icon {
+        width: 32px; height: 32px; border-radius: 50%;
+        background-color: var(--brand-yellow); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; font-size: 0.8rem;
+      }
+      .contact-item p { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text-light); }
+
+      /* Footer Bottom Strip */
+      .footer-bottom {
+        background-color: var(--brand-black);
+        padding: 15px 5vw;
+        margin-top: 30px;
+      }
+      .footer-bottom-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .footer-bottom p { font-size: 0.8rem; margin: 0; color: #ffd0d0; }
+      .footer-bottom p strong { color: #fff; font-weight: 700; }
+      
+      .payment-methods {
+        display: flex; align-items: center; gap: 15px;
+      }
+      .payment-methods span { font-size: 0.85rem; color: #fff; }
+      .pay-icons { display: flex; gap: 5px; }
+      .pay-icons img { height: 20px; background: #fff; border-radius: 2px; padding: 2px 5px; }
+
+      @media (max-width: 1024px) {
+        .footer-top { grid-template-columns: 1fr 1fr; }
+      }
+      
+      @media (max-width: 768px) {
+        .footer-top { grid-template-columns: 1fr; gap: 40px; }
+        .footer-col h4::after { margin: 0 auto; left: 0; right: 0; }
+        .footer-logo { display: block; text-align: center; }
+        .footer-col { text-align: center; }
+        .footer-col > p { margin: 0 auto 25px auto; }
+        .footer-socials { justify-content: center; }
+        .footer-links-list a { justify-content: center; }
+        .contact-item { align-items: center; flex-direction: column; text-align: center; }
+        .footer-bottom-inner { flex-direction: column; gap: 15px; text-align: center; }
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .title {
+          font-size: 6rem;
+        }
+        .subtitle {
+          font-size: 4rem;
+        }
+        .burger-img {
+          max-width: 500px;
+          transform: scale(1.1) translateY(4%);
+        }
+        .hero-footer-info {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .social-icons {
+          margin-left: 0;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .hero-section {
+          height: auto;
+          min-height: 100vh;
+          padding-bottom: 120px;
+        }
+        .hero-container {
+          flex-direction: column;
+          justify-content: center;
+          text-align: center;
+        }
+        .hero-text {
+          transform: translateY(0);
+          margin-top: 50px;
+          order: 1; /* text above image */
+        }
+        .hero-image-wrapper {
+          order: 2; /* image below */
+          margin-top: 20px;
+          min-height: 400px;
+        }
+        .burger-img {
+          max-width: 90%;
+          transform: scale(1) translateY(0);
+          animation: none;
+        }
+        .title {
+          font-size: 4.5rem;
+          transform: rotate(0);
+          text-align: center;
+        }
+        .subtitle {
+          font-size: 3rem;
+          transform: rotate(0);
+          margin-bottom: 10px;
+          text-align: center;
+          display: block;
+        }
+        .description {
+          margin: 20px auto;
+          transform: none;
+        }
+        .btn-order {
+          transform: none;
+          margin-bottom: 30px;
+        }
+        .btn-order:hover {
+          transform: translateY(-3px);
+        }
+        .dotted-logo {
+          display: none;
+        } /* Hide on mobile to save space */
+        .discount-badge {
+          top: 0;
+          right: 10px;
+          width: 90px;
+          height: 90px;
+        }
+        .badge-text-bottom {
+          font-size: 2rem;
+        }
+      }
+
+      /* Mobile Nav Tweaks */
+      @media (max-width: 768px) {
+        .navbar {
+          flex-direction: column;
+          padding: 15px;
+          gap: 15px;
+        }
+        .nav-links {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 10px;
+          background-color: rgba(59, 0, 13, 0.9); /* Maroon overlay */
+          padding: 10px;
+          border-radius: 10px;
+          width: 100%;
+        }
+        .nav-actions {
+          margin-top: 10px;
+          background-color: rgba(59, 0, 13, 0.9);
+          padding: 10px 20px;
+          border-radius: 10px;
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* Block for Extra Styles */
+    </style>
+    {% block styles %}{% endblock %}
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="/user/home" class="logo">
+        <img
+          src="../../static/images/250px-COMSATS_new_logo.jpg"
+          alt="Logo"
+          onerror="this.src = 'https://via.placeholder.com/40'"
+        />
+        Smart Cafe
+      </a>
+      <div class="nav-links">
+        <a href="/user/home">Home</a>
+        <a href="/user/menu">Menu</a>
+        <a href="/user/my_orders">My Orders</a>
+        <a href="/user/contact">Contact</a>
+      </div>
+      <div class="nav-actions">
+        <a href="/user/cart" class="btn-cart">
+          <i class="fas fa-shopping-cart"></i> (<span id="cart-count">0</span>)
+        </a>
+        <span
+          id="user-display"
+          style="
+            color: #ffffff;
+            font-weight: bold;
+            margin-right: 15px;
+            text-transform: capitalize;
+          "
+        ></span>
+        <a href="/user/help" class="btn-help" id="help-btn" style="text-decoration: none; color: var(--brand-yellow); font-weight: bold; margin-right: 15px;"><i class="fas fa-question-circle"></i> Help</a>
+        <a
+          href="#"
+          onclick="confirmLogout(event)"
+          class="btn-logout"
+          id="logout-btn"
+          >Logout</a
+        >
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    {% block content %}{% endblock %}
+
+    <!-- Big Footer -->
+    <footer class="big-footer">
+      <div class="footer-top">
+        <!-- Column 1 -->
+        <div class="footer-col">
+          <div class="footer-logo">Smart Cafe</div>
+          <p>
+            Your everyday ultimate food companion at COMSATS University Vehari
+            Campus. We serve the finest meals catering to students and staff.
+          </p>
+          <div class="footer-socials">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <!-- Column 2 -->
+        <div class="footer-col" style="text-align: left">
+          <h4>Our Menus</h4>
+          <ul class="footer-links-list">
+            <li><a href="/user/menu">Chicken Burger</a></li>
+            <li>
+            <a href="/user/menu">Beef Pizza</a>
+</li>
+            <li><a href="/user/menu">Fresh Vegetable</a></li>
+            <li><a href="/user/menu">Sea Foods</a></li>
+            <li><a href="/user/menu">Desserts</a></li>
+            <li><a href="/user/menu">Cold Drinks</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3 -->
+        <div class="footer-col" style="text-align: left">
+          <h4>Useful Links</h4>
+          <ul class="footer-links-list">
+            <li><a href="/user/home">Home</a></li>
+            <li><a href="/user/contact">Contact Support</a></li>
+            <li><a href="/user/menu">View Menu</a></li>
+            <li><a href="/user/login">Student Portal</a></li>
+            <li><a href="/admin/login">Admin Panel</a></li>
+            <li><a href="/authority/login">Authority Portal</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4 -->
+        <div class="footer-col" style="text-align: left">
+          <h4>Contact Us</h4>
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+            <div>
+              <p>+92 (0) 300 123 4567</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <p>vehari.comsats.edu.pk</p>
+              <p>cafe@cuivehari.edu.pk</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div>
+              <p>COMSATS University<br />Vehari Campus</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-inner">
+          <p>
+            &copy;2025. All rights reserved by
+            <strong>Smart Cafe COMSATS Vehari</strong>
+          </p>
+
+          
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Shared JS for Nav
+      window.addEventListener("load", function () {
+        updateCartCount();
+        checkLogin();
+      });
+
+      function checkLogin() {
+        const userEmail = localStorage.getItem("currentUser");
+        const display = document.getElementById("user-display");
+        const logoutBtn = document.getElementById("logout-btn");
+
+        if (userEmail) {
+          const name = userEmail.split("@")[0];
+          display.innerText = "Hi, " + name;
+          if (logoutBtn) logoutBtn.style.display = "inline-block";
+        } else {
+          display.innerText = "Hi, Guest";
+          if (logoutBtn) logoutBtn.style.display = "none";
+        }
+      }
+
+      function updateCartCount() {
+        let cart = JSON.parse(localStorage.getItem("mySmartCart")) || [];
+        const countSpan = document.getElementById("cart-count");
+        if (countSpan) {
+          countSpan.innerText = cart.reduce((a, b) => a + b.qty, 0);
+        }
+      }
+
+      function confirmLogout(e) {
+        e.preventDefault();
+        if (confirm("Logout?")) {
+          localStorage.removeItem("currentUser");
+          window.location.href = "/";
+        }
+      }
+     
+ document.addEventListener("DOMContentLoaded", function () {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    navLinks.forEach(link => {
+        // Link ka path nikaalein
+        const linkPath = link.getAttribute('href');
+
+        if (currentPath === linkPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+            // Ensure baqi links white hi rahein
+            link.style.color = "white"; 
+        }
+    });
+});
+
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

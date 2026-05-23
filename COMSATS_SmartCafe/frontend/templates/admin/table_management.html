@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Table Management - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+    <style>
+      .table-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .t-card {
+  background: #ffffff; /* Background pure white kar diya */
+  border: 1px solid #cccccc; /* Border ko thoda light grey kar diya taake white pe acha lage */
+  border-radius: 14px;
+  padding: 14px;
+  color: #000000; /* Text ka color black kar diya taake parha ja sake */
+}
+      .t-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .t-name {
+        color: #080101;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+      .t-meta {
+        color: #050202;
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      .t-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .t-actions select,
+      .t-actions input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.35);
+        color: #080202;
+        outline: none;
+      }
+      .btn-small {
+        margin-top: 10px;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: 800;
+        cursor: pointer;
+        background: var(--primary);
+        color: #111;
+        transition: 0.3s;
+      }
+      .btn-small:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+      }
+      /* Modified "Mark Available" button structure to match styling */
+      .btn-danger {
+        background: rgba(48, 1, 14, 0.905);
+        color: var(--text-white);
+        border: 1px solid var(--danger);
+      }
+      .btn-danger:hover {
+        background: var(--danger);
+        color: white;
+      }
+      .badge-mini {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .b-Available {
+        background: #198754;
+        color: #fff;
+      }
+      .b-Reserved {
+        background: var(--primary);
+        color: #111;
+      }
+      .b-Occupied {
+        background: rgba(97, 0, 26, 0.8);
+        border: 1px solid var(--danger);
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management" class="active"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Table Management</h2>
+      <p style="color:#aaa; margin-top:-8px;">
+        Update table status (Available / Reserved / Occupied) for a specific Date and Time Slot.
+      </p>
+
+      <div style="margin-top: 20px; display: flex; gap: 15px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="flex: 1;">
+          <label style="color: #aaa; font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block;">Select Date</label>
+          <input type="date" id="slot-date" style="width: 100%; padding: 10px; border-radius: 8px; background: #222; color: #fff; border: 1px solid #444;" onchange="loadTables()">
+        </div>
+        <div style="flex: 1;">
+          <label style="color: #aaa; font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block;">Select Time Slot</label>
+          <select id="slot-time" style="width: 100%; padding: 10px; border-radius: 8px; background: #222; color: #fff; border: 1px solid #444;" onchange="loadTables()">
+            <option value="08:00">08:00 AM - 10:00 AM</option>
+            <option value="10:00">10:00 AM - 12:00 PM</option>
+            <option value="12:00">12:00 PM - 02:00 PM</option>
+            <option value="14:00">02:00 PM - 04:00 PM</option>
+            <option value="16:00">04:00 PM - 05:00 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-grid" id="tables-grid"></div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+
+      window.onload = function() {
+        // Default to today
+        document.getElementById("slot-date").value = new Date().toISOString().split("T")[0];
+        loadTables();
+      };
+
+      function getCurrentSlotData() {
+        return {
+          date: document.getElementById("slot-date").value || new Date().toISOString().split("T")[0],
+          time: document.getElementById("slot-time").value || "08:00"
+        };
+      }
+
+      async function loadTables() {
+        const grid = document.getElementById("tables-grid");
+        grid.innerHTML = "<p style='color:#aaa;'>Loading tables...</p>";
+        const slot = getCurrentSlotData();
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/tables_by_slot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(slot)
+          });
+          const tables = await res.json();
+
+          if (!tables || tables.length === 0) {
+            grid.innerHTML = "<p style='color:#aaa;'>No tables found.</p>";
+            return;
+          }
+
+          grid.innerHTML = "";
+          tables.forEach((t) => {
+            const reservedBy = t.reserved_by || "";
+            grid.innerHTML += `
+              <div class="t-card">
+                <div class="t-top">
+                  <div class="t-name">${t.table_name}</div>
+                  <span class="badge-mini b-${t.status}">${t.status}</span>
+                </div>
+                <div class="t-meta">Table ID: ${t.table_id}</div>
+                <div class="t-meta">Reserved By: <b style="color:#fff;">${reservedBy || "-"}</b></div>
+
+                <div class="t-actions">
+                  <select id="status-${t.table_id}">
+                    <option value="Available" ${t.status === "Available" ? "selected" : ""}>Available</option>
+                    <option value="Reserved" ${t.status === "Reserved" ? "selected" : ""}>Reserved</option>
+                    <option value="Occupied" ${t.status === "Occupied" ? "selected" : ""}>Occupied</option>
+                  </select>
+                </div>
+                <div class="t-actions">
+                  <input id="by-${t.table_id}" placeholder="reserved_by name" value="${reservedBy}" />
+                </div>
+
+                <button class="btn-small" onclick="saveTable(${t.table_id})">Save</button>
+                <button class="btn-small btn-danger" onclick="freeTable(${t.table_id})">Mark Available</button>
+              </div>
+            `;
+          });
+        } catch (e) {
+          console.error(e);
+          grid.innerHTML =
+            "<p style='color:red;'>Error loading tables. Make sure backend is running.</p>";
+        }
+      }
+
+      async function saveTable(tableId) {
+        const status = document.getElementById("status-" + tableId).value;
+        const reservedBy = document.getElementById("by-" + tableId).value.trim();
+        const slot = getCurrentSlotData();
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/update_table_slot/" + tableId, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: status, reserved_by: reservedBy || null, date: slot.date, time: slot.time }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert("✅ Updated!");
+            loadTables();
+          } else {
+            alert("❌ " + (data.message || "Failed"));
+          }
+        } catch (e) {
+          console.error(e);
+          alert("❌ Server error.");
+        }
+      }
+
+      async function freeTable(tableId) {
+        if (!confirm("Mark table " + tableId + " as Available for this slot?")) return;
+        const slot = getCurrentSlotData();
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/free_table_slot/" + tableId, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(slot)
+          });
+          const data = await res.json();
+          alert(data.message || "Done");
+          loadTables();
+        } catch (e) {
+          console.error(e);
+          alert("❌ Server error.");
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout?")) window.location.href = "/";
+      }
+    </script>
+  </body>
+</html>

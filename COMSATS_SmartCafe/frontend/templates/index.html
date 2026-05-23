@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Cafe - COMSATS</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Permanent+Marker&family=Montserrat:wght@400;500;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-burgundy-light: #61001a;
+        --bg-burgundy-dark: #3b000d;
+        --brand-yellow: #ffb300;
+        --brand-yellow-dark: #e59f00;
+        --brand-black: #111111;
+        --brand-grey: #1e1e1e;
+        --text-light: #f5f5f5;
+
+        --footer-bg: #333333;
+        --footer-bottom: #222222;
+        --footer-text: #cccccc;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: var(--brand-black);
+        color: var(--text-light);
+        overflow-x: hidden;
+      }
+
+      /* --- UNIQUE TOP LOGO AREA --- */
+      .top-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 30px 6vw;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        z-index: 10;
+      }
+
+      .brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .brand-wrap img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        border-radius: 50%;
+      }
+
+      .brand-text {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .dots-accent {
+        position: absolute;
+        top: 30px;
+        left: 100px;
+        width: 50px;
+        height: 20px;
+        background-image: radial-gradient(
+          var(--brand-yellow) 20%,
+          transparent 20%
+        );
+        background-size: 10px 10px;
+        z-index: 1;
+      }
+
+      /* --- HERO SECTION --- */
+      .hero-section {
+        background: radial-gradient(
+          circle at 30% 30%,
+          var(--bg-burgundy-light) 0%,
+          var(--bg-burgundy-dark) 100%
+        );
+        min-height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        padding-top: 100px;
+      }
+
+      /* Yellow bottom curve effect */
+      .hero-curve {
+        position: absolute;
+        bottom: -40vh;
+        right: -10vw;
+        width: 120vw;
+        height: 60vh;
+        background-color: var(--brand-yellow);
+        border-top-left-radius: 100%;
+        z-index: 1;
+        transform: rotate(-5deg);
+      }
+
+      .hero-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 5vw;
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .hero-text {
+        flex: 1;
+        position: relative;
+      }
+
+      /* Dotted icon from the image */
+      .hero-dots {
+        color: var(--brand-yellow);
+        letter-spacing: 3px;
+        font-size: 1.5rem;
+        position: absolute;
+        top: -40px;
+        left: 0;
+      }
+
+      .subtitle {
+        font-family: "Caveat", cursive;
+        font-size: 4rem;
+        color: #fff;
+        display: inline-block;
+        transform: rotate(-5deg);
+        margin-bottom: -15px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .title {
+        font-family: "Permanent Marker", cursive;
+        font-size: 6.5rem;
+        color: var(--brand-yellow);
+        line-height: 1;
+        transform: rotate(-5deg);
+        margin-bottom: 25px;
+        text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        letter-spacing: 2px;
+      }
+
+      .description {
+        font-size: 1rem;
+        color: #dfdfdf;
+        max-width: 450px;
+        line-height: 1.6;
+        margin-bottom: 40px;
+        font-weight: 500;
+        margin-left: 20px;
+      }
+
+      .btn-order {
+        display: inline-block;
+        background-color: #310008;
+        color: var(--brand-yellow);
+        border: 1px solid #730018;
+        padding: 15px 40px;
+        border-radius: 30px;
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        text-decoration: none;
+        letter-spacing: 1px;
+        box-shadow:
+          inset 0 0 10px rgba(0, 0, 0, 0.5),
+          0 5px 15px rgba(0, 0, 0, 0.3);
+        margin-left: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-order:hover {
+        background-color: var(--brand-yellow);
+        color: var(--bg-burgundy-dark);
+      }
+
+      .hero-image-wrapper {
+        flex: 1.2;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .burger-img {
+        width: 120%;
+        max-width: 700px;
+        transform: scale(1.1) translateY(8%);
+        z-index: 2;
+        filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.6));
+        border-radius: 20px;
+      }
+
+      .discount-badge {
+        position: absolute;
+        top: 5%;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 2px dashed var(--brand-yellow);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--brand-yellow);
+        transform: rotate(15deg);
+        z-index: 3;
+      }
+      .badge-text-top {
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      .badge-text-bottom {
+        font-size: 2.2rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      /* --- ROLES SECTION --- */
+      .roles-section {
+        background-color: var(--brand-black);
+        padding: 100px 5vw;
+        text-align: center;
+        position: relative;
+        z-index: 5;
+      }
+
+      .roles-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--brand-yellow),
+          transparent
+        );
+        opacity: 0.3;
+      }
+
+      .section-title {
+        font-size: 2.8rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #fff;
+        letter-spacing: 3px;
+        margin-bottom: 70px;
+        position: relative;
+        display: inline-block;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background-color: var(--brand-yellow);
+        border-radius: 2px;
+      }
+
+      .role-grid {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .role-card {
+        background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+        width: 340px;
+        padding: 60px 30px;
+        text-align: center;
+        text-decoration: none;
+        color: white;
+        border-radius: 20px;
+        transition: all 0.4s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .role-card:hover {
+        transform: translateY(-15px);
+        border-color: rgba(255, 179, 0, 0.3);
+        box-shadow: 0 20px 40px rgba(255, 179, 0, 0.15);
+      }
+      .icon-box {
+        font-size: 3.5rem;
+        color: var(--brand-yellow);
+        margin-bottom: 25px;
+        transition: transform 0.3s ease;
+      }
+      .role-card:hover .icon-box {
+        transform: scale(1.1) rotate(5deg);
+      }
+      .role-card h3 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .role-card p {
+        font-size: 0.95rem;
+        color: #b3b3b3;
+        line-height: 1.7;
+        margin-bottom: 35px;
+        font-weight: 500;
+      }
+      .arrow-link {
+        color: var(--brand-black);
+        background-color: var(--brand-yellow);
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        display: inline-block;
+        transition: all 0.3s;
+      }
+      .role-card:hover .arrow-link {
+        background-color: #fff;
+        transform: scale(1.05);
+      }
+
+      /* --- FOOTER (Complex Layout) --- */
+      .big-footer {
+        background-color: var(--bg-burgundy-dark); /* Match upper div */
+        color: var(--footer-text);
+        font-family: "Montserrat", sans-serif;
+        border-top: 2px solid var(--brand-yellow);
+      }
+
+      .footer-top {
+        padding: 70px 5vw;
+        display: grid;
+        /* Adjusted for 4 columns instead of 5 since we removed the App Download section */
+        grid-template-columns: 2fr 1fr 1fr 2fr;
+        gap: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .footer-col h4 {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        position: relative;
+      }
+
+      .footer-col h4::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 2px;
+        background: repeating-linear-gradient(
+          to right,
+          #fff 0,
+          #fff 5px,
+          transparent 5px,
+          transparent 8px
+        );
+      }
+
+      .footer-logo {
+        font-family: "Permanent Marker", cursive;
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 20px;
+        display: inline-block;
+        letter-spacing: 1px;
+      }
+
+      .footer-col > p {
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        color: var(--text-light); /* Soften text on burgundy background */
+      }
+
+      .footer-socials {
+        display: flex;
+        gap: 10px;
+      }
+      .footer-socials a {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #fff;
+        color: var(--bg-burgundy-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.3s;
+      }
+      .footer-socials a:hover {
+        background-color: var(--brand-yellow);
+        color: #fff;
+      }
+
+      .footer-links-list {
+        list-style: none;
+      }
+      .footer-links-list li {
+        margin-bottom: 12px;
+      }
+      .footer-links-list a {
+        color: var(
+          --text-light
+        ); /* Match paragraph text color for visibility */
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s;
+      }
+      .footer-links-list a::before {
+        content: "→";
+        font-size: 0.9rem;
+        transition: margin-left 0.3s;
+      }
+      .footer-links-list a:hover {
+        color: var(--brand-yellow);
+      }
+      .footer-links-list a:hover::before {
+        margin-left: 5px;
+      }
+
+      /* Contacts Column */
+      .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .contact-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: var(--brand-yellow);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+      }
+      .contact-item p {
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: var(--text-light);
+      }
+
+      /* Footer Bottom Strip */
+      .footer-bottom {
+        background-color: var(
+          --brand-black
+        ); /* Darker stripe for bottom strip */
+        padding: 15px 5vw;
+      }
+      .footer-bottom-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .footer-bottom p {
+        font-size: 0.8rem;
+        margin: 0;
+        color: #ffd0d0;
+      }
+      .footer-bottom p strong {
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .payment-methods {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .payment-methods span {
+        font-size: 0.85rem;
+        color: #fff;
+      }
+      .pay-icons {
+        display: flex;
+        gap: 5px;
+      }
+      .pay-icons img {
+        height: 20px;
+        background: #fff;
+        border-radius: 2px;
+        padding: 2px 5px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 1024px) {
+        .hero-section {
+          min-height: 80vh;
+          flex-direction: column;
+          overflow: visible;
+          padding-top: 120px;
+        }
+        .hero-container {
+          flex-direction: column;
+          text-align: center;
+        }
+        .hero-dots {
+          top: -60px;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+        .hero-text {
+          margin-bottom: 60px;
+        }
+        .title {
+          font-size: 5rem;
+          transform: none;
+        }
+        .subtitle {
+          transform: none;
+        }
+        .description {
+          margin: 20px auto;
+        }
+        .btn-order {
+          margin-left: 0;
+        }
+        .burger-img {
+          width: 100%;
+          max-width: 500px;
+          transform: scale(1);
+          filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
+        }
+        .hero-curve {
+          right: 0;
+          width: 100vw;
+          height: 30vh;
+          border-radius: 0;
+          bottom: -5vh;
+          transform: none;
+        }
+        .footer-top {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .footer-top {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+        .footer-col h4::after {
+          margin: 0 auto;
+          left: 0;
+          right: 0;
+        }
+        .footer-logo {
+          display: block;
+          text-align: center;
+        }
+        .footer-col {
+          text-align: center;
+        }
+        .footer-col > p {
+          margin: 0 auto 25px auto;
+        }
+        .footer-socials {
+          justify-content: center;
+        }
+        .footer-links-list a {
+          justify-content: center;
+        }
+        .contact-item {
+          align-items: center;
+          flex-direction: column;
+          text-align: center;
+        }
+        .footer-bottom-inner {
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+        .top-header {
+          flex-direction: column;
+          gap: 20px;
+          align-items: center;
+          padding-left: 5vw;
+        }
+        .brand-wrap {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <!-- COMSATS LOGO and TITLE absolute top -->
+      <div class="top-header">
+        <div class="brand-wrap">
+          <img
+            src="{{ url_for('static', filename='images/250px-COMSATS_new_logo.jpg') }}"
+            alt="COMSATS"
+          />
+          <span class="brand-text">Smart Cafe</span>
+        </div>
+      </div>
+
+      <!-- Yellow background curve at bottom right -->
+      <div class="hero-curve"></div>
+
+      <div class="hero-container">
+        <!-- Text Area -->
+        <div class="hero-text">
+          <div class="hero-dots">::::::</div>
+          <div class="subtitle">Super Delicious</div>
+          <br />
+          <div class="title">Smart Cafe</div>
+          <p class="description">
+            Welcome to the COMSATS Vehari Smart Cafe! Enjoy our premium quality,
+            freshly prepared fast food and organic meals. Order online to skip
+            the queue and get your favorite food instantly.
+          </p>
+          <a href="javascript:void(0)" onclick="goToLogin()" class="btn-order"
+            >ORDER NOW</a
+          >
+        </div>
+
+        <!-- Image Area -->
+        <div class="hero-image-wrapper">
+          <img
+            src="{{ url_for('static', filename='images/f1.jpg') }}"
+            alt="Delicious Food Background"
+            class="burger-img"
+            style="
+              object-fit: cover;
+              border-radius: 20px;
+              box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            "
+            crossorigin="anonymous"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Roles section -->
+    <div class="roles-section" id="roles">
+      <h2 class="section-title">Select Role</h2>
+
+      <div class="role-grid">
+        <a href="/user/login" class="role-card">
+          <div class="icon-box"><i class="fas fa-utensils"></i></div>
+          <h3>Student</h3>
+          <p>
+            Order fresh food, check the detailed menu, and track the status of
+            your orders online.
+          </p>
+          <div class="arrow-link">Access Panel &rarr;</div>
+        </a>
+
+        <a href="/admin/login" class="role-card">
+          <div class="icon-box"><i class="fas fa-tasks"></i></div>
+          <h3>Admin</h3>
+          <p>
+            Manage the entire cafe menu, track active daily orders, and view
+            comprehensive sales reports.
+          </p>
+          <div class="arrow-link">Manage System &rarr;</div>
+        </a>
+
+        <a href="/authority/login" class="role-card">
+          <div class="icon-box"><i class="fas fa-clipboard-check"></i></div>
+          <h3>Authority</h3>
+          <p>
+            Supervise hygiene metrics and ensure food quality standards are
+            consistently met.
+          </p>
+          <div class="arrow-link">View Reports &rarr;</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Big Footer -->
+    <footer class="big-footer">
+      <div class="footer-top">
+        <!-- Column 1 -->
+        <div class="footer-col">
+          <div class="footer-logo">Smart Cafe</div>
+          <p>
+            Your everyday ultimate food companion at COMSATS University Vehari
+            Campus. We serve the finest meals catering to students and staff.
+          </p>
+          <div class="footer-socials">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <!-- Column 2 -->
+        <div class="footer-col">
+          <h4>Our Menus</h4>
+          <ul class="footer-links-list">
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Chicken Burger</a
+              >
+            </li>
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Beef Pizza</a
+              >
+            </li>
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Fresh Vegetable</a
+              >
+            </li>
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Sea Foods</a
+              >
+            </li>
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Desserts</a
+              >
+            </li>
+            <li>
+              <a
+                href="/user/login"
+                onclick="alert('Please login first to view menus.')"
+                >Cold Drinks</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3 -->
+        <div class="footer-col">
+          <h4>Useful Links</h4>
+          <ul class="footer-links-list">
+            <li><a href="/user/home">Home</a></li>
+            <li><a href="/user/contact">Contact Support</a></li>
+            <li><a href="/user/menu">View Menu</a></li>
+            <li><a href="/user/login">Student Portal</a></li>
+            <li><a href="/admin/login">Admin Panel</a></li>
+            <li><a href="/authority/login">Authority Portal</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4 -->
+        <div class="footer-col">
+          <h4>Contact Us</h4>
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+            <div>
+              <p>+92 (0) 300 123 4567</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <p>vehari.comsats.edu.pk</p>
+              <p>cafe@cuivehari.edu.pk</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div>
+              <p>COMSATS University<br />Vehari Campus</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-inner">
+          <p>
+            &copy;2025. All rights reserved by
+            <strong>Smart Cafe COMSATS Vehari</strong>
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script>
+      function goToLogin() {
+        console.log("Redirecting..."); // Check karne ke liye ke click ho raha hai
+        window.location.href = "/user/login";
+      }
+    </script>
+  </body>
+</html>

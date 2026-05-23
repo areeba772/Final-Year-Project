@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Send Notification - Food Authority</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/authority_style.css') }}" />
+    <style>
+      /* History Table Styles */
+      .history-box {
+        margin-top: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+      }
+      .history-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+      }
+      .badge-sent {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      /* Reply Box Styles */
+      .reply-box {
+        background: #e7f1ff;
+        border-left: 5px solid #0d6efd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Food Authority</div>
+        <div class="sidebar-menu">
+          <a href="/authority/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/authority/view_reviews"><i>👁</i> View User Reviews</a>
+          <a href="/authority/check_prices"><i>💲</i> Check Prices</a>
+          <a href="/authority/send_notification" class="active"
+            ><i>🚀</i> Send Notification</a
+          >
+          <!-- Admin Replies link removed -->        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Communication Center</h2>
+
+      <div
+        class="history-box"
+        style="
+          margin-top: 0;
+          margin-bottom: 30px;
+          border-top: 5px solid #0d6efd;
+        "
+      >
+        <div class="history-header">📩 Inbox: Replies from Admin</div>
+        <div id="inbox-container"></div>
+      </div>
+
+      <div class="card-box">
+        <div class="card-header header-red">Compose Warning / Notice</div>
+        <div class="form-body">
+          <form onsubmit="sendOfficialNotice(event)">
+            <div class="form-group">
+              <label>Notice Type</label>
+              <select id="notice-type" class="form-control">
+                <option value="Warning">⚠️ Warning (Price/Hygiene)</option>
+                <option value="Alert">✅ Approval / Clearance</option>
+                <option value="Urgent">🔴 Urgent Action Required</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Subject</label>
+              <input
+                type="text"
+                id="notice-subject"
+                class="form-control"
+                placeholder="e.g. Hygiene Inspection Scheduled"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Detailed Message</label>
+              <textarea
+                id="notice-msg"
+                class="form-control"
+                rows="4"
+                placeholder="Enter full details of the notice..."
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn-send">
+              Issue Notice to Admin
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="history-box">
+        <div class="history-header">📜 Sent History</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Subject</th>
+              <th>Message</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      window.onload = function () {
+        loadHistory();
+        loadInbox(); // Load replies from backend
+      };
+
+      // --- SEND NOTICE FUNCTION (Backend Connected) ---
+      async function sendOfficialNotice(event) {
+        event.preventDefault();
+
+        let type = document.getElementById("notice-type").value;
+        let subject = document.getElementById("notice-subject").value;
+        let message = document.getElementById("notice-msg").value;
+        let authorityEmail = localStorage.getItem("authorityUser");
+
+        if (!authorityEmail) {
+          alert("Please login first!");
+          return;
+        }
+
+        // Map notice type to warning type
+        let warningType = "Other";
+        if (type === "Warning") warningType = "Food Quality";
+        else if (type === "Alert") warningType = "Pricing";
+
+        const warningData = {
+          authority_email: authorityEmail,
+          message: `${subject}: ${message}`,
+          type: warningType
+        };
+
+        try {
+          const response = await fetch("/api/authority/send_warning", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(warningData)
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            alert("✅ Official Notice Sent to Cafe Admin!");
+            document.getElementById("notice-subject").value = "";
+            document.getElementById("notice-msg").value = "";
+            loadInbox(); // Reload to show new sent item if we decide to show sent items in inbox too, but mainly for sync.
+            // Actually loadHistory currently uses localStorage, we should really update that too if we want full backend sync, 
+            // but for now user asked for "Admin Replies" specifically. 
+            // The previous loadHistory was purely local. I will leave it local-ish or update it if I can.
+            // But the user priority is "Admin Replies".
+            
+            // Let's keep the localStorage history for "User's own sent record" if desired, 
+            // OR better, we can fetch the SENT warnings from backend too since we have the API.
+            // The API authority/warnings returns both sent warnings AND replies.
+            // So I will update loadInbox to show the conversation.
+            loadInbox(); 
+          } else {
+            alert("❌ Error: " + (data.message || "Failed to send warning"));
+          }
+        } catch (error) {
+          console.error("Error sending warning:", error);
+          alert("❌ Server connection failed. Make sure backend is running.");
+        }
+      }
+
+      // --- LOAD INBOX & HISTORY FROM BACKEND ---
+      async function loadInbox() {
+        // This function now replaces both loadHistory (sent items) and loadInbox (replies)
+        // because the API returns the full warning object which has both message and reply.
+        
+        const email = localStorage.getItem("authorityUser");
+        if (!email) return;
+
+        try {
+            const res = await fetch("/api/authority/warnings?email=" + encodeURIComponent(email));
+            const data = await res.json();
+            
+            const inboxContainer = document.getElementById("inbox-container");
+            const historyBody = document.getElementById("history-body");
+            
+            inboxContainer.innerHTML = "";
+            historyBody.innerHTML = "";
+
+            if (!data.success || !data.warnings || data.warnings.length === 0) {
+                inboxContainer.innerHTML = "<p style='color:#777; text-align:center;'>No messages found.</p>";
+                historyBody.innerHTML = "<tr><td colspan='5' style='text-align:center; color:#777;'>No notices sent yet.</td></tr>";
+                return;
+            }
+
+            data.warnings.forEach(w => {
+                // 1. Populate History Table (Sent Items)
+                const date = w.created_at ? new Date(w.created_at).toLocaleString() : "-";
+                const shortMsg = w.warning_message.length > 50 ? w.warning_message.substring(0, 50) + "..." : w.warning_message;
+                
+                historyBody.innerHTML += `
+                    <tr>
+                        <td style="font-size:13px; color:#666;">${date}</td>
+                        <td style="font-weight:bold;">${w.warning_type}</td>
+                        <td>Notice</td> <!-- Subject not stored in DB separately currently, part of message -->
+                        <td style="font-size:13px; color:#555;">${shortMsg}</td>
+                        <td><span class="badge-sent">Sent</span></td>
+                    </tr>
+                `;
+
+                // 2. Populate Inbox (Replies)
+                if (w.admin_reply) {
+                    inboxContainer.innerHTML += `
+                        <div class="reply-box">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <strong>🔔 Reply from Cafe Admin</strong>
+                                <small>${date}</small>
+                            </div>
+                             <p style="margin-bottom:5px; color:#555; font-size:0.9rem;">
+                                <em>Ref: ${shortMsg}</em>
+                            </p>
+                            <p style="margin:0; color:#333; font-weight:500;">${w.admin_reply}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            if (inboxContainer.innerHTML === "") {
+                inboxContainer.innerHTML = "<p style='color:#777; text-align:center;'>No new messages from Admin.</p>";
+            }
+
+        } catch (e) {
+            console.error("Error loading warnings:", e);
+            inboxContainer.innerHTML = "<p style='color:#c0392b; text-align:center;'>Could not load inbox. Restart server and login again.</p>";
+        }
+      }
+
+      // Old loadHistory function is deprecated/replaced by loadInbox functionality above.
+      function loadHistory() {
+          // Placeholder or empty as we handle it in loadInbox now
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout from Authority Portal?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

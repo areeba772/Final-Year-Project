@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Reviews - Food Authority</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/authority_style.css') }}" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Food Authority</div>
+        <div class="sidebar-menu">
+          <a href="/authority/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/authority/view_reviews" class="active"
+            ><i>👁</i> View User Reviews</a
+          >
+          <a href="/authority/check_prices"><i>💲</i> Check Prices</a>
+          <a href="/authority/send_notification"><i>🚀</i> Send Notification</a>
+          
+          <!-- Admin Replies link removed -->
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Student Feedback</h2>
+
+      <div class="card-box">
+        <div class="card-header">Latest Reviews</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Student</th>
+              <th>Item</th>
+              <th>Rating</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody id="reviews-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      window.onload = loadReviews;
+
+      async function loadReviews() {
+        let tbody = document.getElementById("reviews-body");
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'><i class='fas fa-spinner fa-spin'></i> Loading reviews...</td></tr>";
+
+        try {
+          const response = await fetch("/api/authority/reviews");
+          const data = await response.json();
+
+          if (data.success && data.reviews.length > 0) {
+            tbody.innerHTML = "";
+            data.reviews.forEach((r) => {
+              let stars = "⭐".repeat(r.rating);
+              let date = new Date(r.created_at).toLocaleDateString();
+              
+              // Image Handling
+              let imgHtml = "";
+              if (r.image_url) {
+                 let src = r.image_url;
+                 if (!src.startsWith("http")) src = "../../static/images/" + src;
+                 imgHtml = `<img src="${src}" style="width:40px; height:40px; border-radius:5px; object-fit:cover; margin-right:5px; vertical-align:middle;">`;
+              }
+              
+              tbody.innerHTML += `
+                        <tr>
+                            <td>${date}</td>
+                            <td style="font-weight:bold; text-transform:capitalize;">${r.full_name || 'User'}</td>
+                            <td style="display:flex; align-items:center;">
+                                ${imgHtml}
+                                <span>${r.item_name || 'N/A'}</span>
+                            </td>
+                            <td style="color:#ffc107">${stars} (${r.rating}/5)</td>
+                            <td style="font-style:italic;">"${r.comment || 'No comment'}"</td>
+                        </tr>
+                    `;
+            });
+          } else {
+            tbody.innerHTML =
+              "<tr><td colspan='5' style='text-align:center'>No reviews yet.</td></tr>";
+          }
+        } catch (error) {
+          console.error("Error loading reviews:", error);
+          tbody.innerHTML =
+            "<tr><td colspan='5' style='text-align:center; color:red;'>Error loading reviews. Make sure backend is running.</td></tr>";
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout from Authority Portal?")) {
+          // Wapis Main Page par jao
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

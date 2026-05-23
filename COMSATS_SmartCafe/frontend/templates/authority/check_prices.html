@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Check Prices - Food Authority</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/authority_style.css') }}" />
+    <style>
+      /* Status Select Styling */
+      .status-dropdown {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .ok {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border-color: #badbcc;
+      }
+      .warning {
+        background-color: #f8d7da;
+        color: #842029;
+        border-color: #f5c2c7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Food Authority</div>
+        <div class="sidebar-menu">
+          <a href="/authority/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/authority/view_reviews"><i>👁</i> View User Reviews</a>
+          <a href="/authority/check_prices" class="active"><i>💲</i> Check Prices</a>
+          <a href="/authority/send_notification"><i>🚀</i> Send Notification</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Price Monitoring</h2>
+
+      <div class="card-box">
+        <div class="card-header">Current Cafe Menu Rates</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Price (Rs)</th>
+              <th>Authority Action / Status</th>
+            </tr>
+          </thead>
+          <tbody id="price-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      // Helper to check category price ranges
+      function isPriceHigh(category, price) {
+        if (!category) return price > 1000;
+        let cat = category.toLowerCase();
+        if (cat.includes('drink')) return price > 300;
+        if (cat.includes('fast') || cat.includes('pizza') || cat.includes('burger')) return price > 1000;
+        if (cat.includes('desi')) return price > 1200;
+        if (cat.includes('dessert') || cat.includes('cake') || cat.includes('sweet')) return price > 700;
+        return price > 1000; // default
+      }
+
+      window.onload = loadPrices;
+
+      async function loadPrices() {
+        let tbody = document.getElementById("price-list");
+        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center'><i class='fas fa-spinner fa-spin'></i> Loading prices...</td></tr>";
+
+        try {
+          const response = await fetch("/api/authority/prices");
+          const data = await response.json();
+
+          if (data.success && data.menu && data.menu.length > 0) {
+            tbody.innerHTML = "";
+            let htmlHTML = "";
+            data.menu.forEach((item) => {
+              const price = parseFloat(item.price) || 0;
+              const maxPrice = parseFloat(item.max_price) || price;
+              const priceLabel = maxPrice > price
+                ? `Rs. ${price} – ${maxPrice}`
+                : `Rs. ${price}`;
+              let isHighPrice = isPriceHigh(item.category, maxPrice || price);
+              let selectClass = isHighPrice ? "warning" : "ok";
+
+              htmlHTML += `
+                        <tr>
+                            <td style="font-weight:bold;">${item.name}</td>
+                            <td>${item.category || 'N/A'}</td>
+                            <td>${priceLabel}</td>
+                            <td>
+                                <select onchange="updatePriceStatus(${item.item_id}, '${item.name.replace(/'/g, "\\'")}', ${maxPrice || price}, this)" class="status-dropdown ${selectClass}">
+                                    <option value="Compliant" ${
+                                      !isHighPrice ? "selected" : ""
+                                    }>✔ Compliant</option>
+                                    <option value="High Price" ${
+                                      isHighPrice ? "selected" : ""
+                                    }>⚠️ High Price Warning</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+            });
+            tbody.innerHTML = htmlHTML;
+          } else {
+            tbody.innerHTML =
+              `<tr><td colspan='4' style='text-align:center; color:#ccc;'>${data.message || "No items in menu."}</td></tr>`;
+          }
+        } catch (error) {
+          console.error("Error loading prices:", error);
+          tbody.innerHTML =
+            "<tr><td colspan='4' style='text-align:center; color:red;'>Error loading prices. Make sure backend is running.</td></tr>";
+        }
+      }
+
+      // --- STATUS UPDATE & AUTO NOTIFICATION (Backend Connected) ---
+      async function updatePriceStatus(itemId, itemName, price, selectElement) {
+        let newStatus = selectElement.value;
+
+        // 2. Color Change (Visual Feedback)
+        if (newStatus === "High Price") {
+          selectElement.className = "status-dropdown warning";
+          // 3. SEND WARNING TO ADMIN VIA BACKEND
+          await sendAutoWarning(itemName, price);
+        } else {
+          selectElement.className = "status-dropdown ok";
+        }
+      }
+
+      async function sendAutoWarning(itemName, price) {
+        let authorityEmail = localStorage.getItem("authorityUser");
+        if (!authorityEmail) {
+          alert("Please login first!");
+          return;
+        }
+
+        let msg = `Official Warning: The price of '${itemName}' (Rs. ${price}) exceeds the allowed limit for its category. Please reduce it immediately to comply with university regulations.`;
+
+        const warningData = {
+          authority_email: authorityEmail,
+          message: msg,
+          type: "Pricing"
+        };
+
+        try {
+          const response = await fetch("/api/authority/send_warning", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(warningData)
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            alert("🚨 Status Updated! Warning Notification sent to Admin.");
+          } else {
+            alert("❌ Error: " + (data.message || "Failed to send warning"));
+          }
+        } catch (error) {
+          console.error("Error sending warning:", error);
+          alert("❌ Server connection failed. Make sure backend is running.");
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout from Authority Portal?"))
+          window.location.href = "/";
+      }
+    </script>
+  </body>
+</html>

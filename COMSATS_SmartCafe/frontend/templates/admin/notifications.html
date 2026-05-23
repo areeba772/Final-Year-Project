@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notifications - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+    <style>
+      .btn-reply {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-right: 5px;
+      }
+      .btn-reply:hover {
+        background-color: #0b5ed7;
+      }
+      .btn-del-msg {
+        background: transparent;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications" class="active"
+            ><i>🔔</i> Notifications</a
+          >
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Notifications Center</h2>
+      <div class="table-container">
+        <div style="display: flex; gap: 20px; width: 100%;">
+          <!-- Left Column: Authority Warnings -->
+          <div style="flex: 1;">
+            <h3
+              style="
+                margin-bottom: 20px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+              "
+            >
+              Authority Warnings
+            </h3>
+            <div id="authority-notification-list"></div>
+          </div>
+
+          <!-- Vertical Divider -->
+          <div style="width: 1px; background-color: #ccc; margin: 0 10px;"></div>
+
+          <!-- Right Column: User Messages -->
+          <div style="flex: 1;">
+            <h3
+              style="
+                margin-bottom: 20px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+              "
+            >
+              User Messages
+            </h3>
+            <div id="user-notification-list"></div>
+          </div>
+        </div>
+        <button
+          onclick="clearNotifications()"
+          style="
+            margin-top: 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+          "
+        >
+          Clear All
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+
+      window.onload = loadNotifications;
+
+      async function loadNotifications() {
+        let authList = document.getElementById("authority-notification-list");
+        let userList = document.getElementById("user-notification-list");
+        let loadingHtml = "<p style='text-align:center; color:#777;'><i class='fas fa-spinner fa-spin'></i> Loading...</p>";
+        authList.innerHTML = loadingHtml;
+        userList.innerHTML = loadingHtml;
+
+        try {
+          // 1. Food Authority warnings
+          const warnRes = await fetch(ADMIN_API_BASE + "/warnings");
+          const warnData = await warnRes.json();
+
+          // 2. User messages / complaints
+          const msgRes = await fetch(ADMIN_API_BASE + "/messages");
+          const msgData = await msgRes.json();
+
+          authList.innerHTML = "";
+          userList.innerHTML = "";
+
+          const warnings = warnData.success ? warnData.warnings || [] : [];
+          const messages = msgData.messages || [];
+
+          // --- Food Authority Warnings ---
+          if (warnings.length === 0) {
+            authList.innerHTML = "<p style='text-align:center; color:#777;'>No new authority warnings.</p>";
+          } else {
+            warnings.forEach((w) => {
+              let date = w.created_at
+                ? new Date(w.created_at).toLocaleString()
+                : "-";
+              const replyHtml = w.admin_reply
+                ? `<p style="margin-top:10px; padding:10px; background:#e2e3e5; border-radius:4px; color:#333;">
+                      <strong>Admin Reply to Authority:</strong> ${w.admin_reply}
+                   </p>`
+                : "";
+              authList.innerHTML += `
+                <div style="background:#fff3cd; padding: 15px; border-left: 5px solid #ffc107; margin-bottom: 15px; border-radius: 4px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <strong style="font-size:16px; color:#333;">⚠️ Food Authority Warning</strong>
+                    <small style="color:#666;">${date}</small>
+                  </div>
+                  <p style="margin:5px 0; color:#555;">${w.warning_message}</p>
+                  <small style="font-weight:bold; color:#444;">Type: ${
+                    w.warning_type || "Other"
+                  } | From: ${w.authority_name || "Authority"}</small>
+                  ${replyHtml}
+                  ${
+                    w.admin_reply
+                      ? `<button onclick="replyToAuthorityWarning(${w.warning_id}, '${(w.authority_name || "Authority").replace(/'/g, "\\'")}')" class="btn-reply" style="margin-top:8px;">✏️ Edit Reply</button>`
+                      : `<button onclick="replyToAuthorityWarning(${w.warning_id}, '${(w.authority_name || "Authority").replace(/'/g, "\\'")}')" class="btn-reply" style="margin-top:8px;">↩ Reply to Authority</button>`
+                  }
+                </div>
+              `;
+            });
+          }
+
+          // --- User Messages / Complaints ---
+          if (messages.length === 0) {
+            userList.innerHTML = "<p style='text-align:center; color:#777;'>No new user messages.</p>";
+          } else {
+            messages.forEach((m) => {
+              let date = m.created_at
+                ? new Date(m.created_at).toLocaleString()
+                : "-";
+              let replyBtn = m.admin_reply
+                ? `<button onclick="editReply(${m.message_id}, '${m.admin_reply.replace(/'/g, "\\'")}')" class="btn-reply" style="margin-top:5px;">✏️ Edit Reply</button>`
+                : `<button onclick="replyToMessage(${m.message_id}, '${(m.full_name || "User").replace(/'/g, "\\'")}')" class="btn-reply" style="margin-top:5px;">↩ Reply</button>`;
+              
+              userList.innerHTML += `
+                <div style="background:#cff4fc; padding: 15px; border-left: 5px solid #0dcaf0; margin-bottom: 15px; border-radius: 4px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <strong style="font-size:16px; color:#333;">👤 ${m.subject ||
+                      "User Message"}</strong>
+                    <small style="color:#666;">${date}</small>
+                  </div>
+                  <p style="margin:5px 0; color:#555;">${m.message}</p>
+                  <small style="font-weight:bold; color:#444;">From: ${m.full_name ||
+                    "User"}</small>
+                  ${
+                    m.admin_reply
+                      ? `<p style="margin-top:10px; padding:10px; background:#e2e3e5; border-radius:4px; color:#333;"><strong>Admin Reply:</strong> ${m.admin_reply}</p>`
+                      : ""
+                  }
+                  ${replyBtn}
+                </div>
+              `;
+            });
+          }
+        } catch (e) {
+          console.error("Admin notifications load error:", e);
+          authList.innerHTML = "<p style='text-align:center; color:red;'>Error loading notifications (Run app.py)</p>";
+          userList.innerHTML = "<p style='text-align:center; color:red;'>Error loading notifications (Run app.py)</p>";
+        }
+      }
+
+      function replyToMessage(messageId, userName) {
+        let replyText = prompt("Type your reply to " + userName + ":");
+        if (replyText != null && replyText.trim() !== "") {
+          fetch(ADMIN_API_BASE + "/reply", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message_id: messageId,
+              reply: replyText.trim()
+            })
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                alert("✅ Reply sent to " + userName + "!");
+                loadNotifications();
+              } else {
+                alert("❌ Error: " + (data.message || "Failed to send reply"));
+              }
+            })
+            .catch((e) => {
+              console.error("Reply error:", e);
+              alert("❌ Server error while sending reply.");
+            });
+        }
+      }
+
+      function replyToAuthorityWarning(warningId, authorityName) {
+        let replyText = prompt(
+          "Type your reply for Food Authority (" + authorityName + "):"
+        );
+        if (replyText != null && replyText.trim() !== "") {
+          fetch(ADMIN_API_BASE + "/reply", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              target_type: "authority",
+              warning_id: warningId,
+              reply: replyText.trim(),
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                alert("✅ Reply saved for Food Authority!");
+                loadNotifications();
+              } else {
+                alert("❌ Error: " + (data.message || "Failed to send reply"));
+              }
+            })
+            .catch((e) => {
+              console.error("Reply authority error:", e);
+              alert("❌ Server error while sending reply.");
+            });
+        }
+      }
+
+      function editReply(messageId, currentReply) {
+        let newReply = prompt("Edit your reply:", currentReply);
+        if (newReply != null && newReply.trim() !== "") {
+          fetch(ADMIN_API_BASE + "/reply", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message_id: messageId,
+              reply: newReply.trim()
+            })
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                alert("✅ Reply updated!");
+                loadNotifications();
+              } else {
+                alert("❌ Error: " + (data.message || "Failed to update reply"));
+              }
+            })
+            .catch((e) => {
+              console.error("Edit reply error:", e);
+              alert("❌ Server error while updating reply.");
+            });
+        }
+      }
+
+      function clearNotifications() {
+        alert(
+          "DB based notifications ko yahan se directly clear nahi kar rahe. Please handle via database/admin actions."
+        );
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout?")) window.location.href = "/";
+      }
+    </script>
+  </body>
+</html>

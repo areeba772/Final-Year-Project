@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Authority Dashboard - Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/authority_style.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Stats Cards Colors */
+      .bg-success {
+        background-color: rgba(97, 0, 26, 0.8); /* Maroon */
+        border-top: 5px solid #198754; /* Green accent */
+        color: var(--text-white);
+      } /* Good Reviews */
+      .bg-danger {
+        background-color: rgba(97, 0, 26, 0.8); /* Maroon */
+        border-top: 5px solid #dc3545; /* Red accent */
+        color: var(--text-white);
+      } /* Bad Reviews */
+      .bg-warning {
+        background-color: rgba(97, 0, 26, 0.8); /* Maroon */
+        border-top: 5px solid #ffc107; /* Yellow accent */
+        color: var(--text-white);
+      } /* High Prices */
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .card {
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .card h3 {
+        font-size: 36px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+      .card p {
+        font-size: 16px;
+        font-weight: 500;
+        opacity: 0.9;
+      }
+
+      /* Chart Container */
+      .chart-box {
+        background: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        height: 400px; /* Fixed Height for Graph */
+        border: 1px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Food Authority</div>
+        <div class="sidebar-menu">
+          <a href="/authority/dashboard" class="active"><i>📊</i> Dashboard</a>
+          <a href="/authority/view_reviews"><i>👁</i> View User Reviews</a>
+          <a href="/authority/check_prices"><i>💲</i> Check Prices</a>
+          <a href="/authority/send_notification"><i>🚀</i> Send Notification</a>
+          <!-- Admin Replies link removed -->
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Cafe Oversight Overview</h2>
+
+      <div class="stats-grid">
+        <div class="card bg-success">
+          <p>🙂 Positive Feedback (4-5★)</p>
+          <h3 id="stat-good">0</h3>
+        </div>
+
+        <div class="card bg-danger">
+          <p>☹️ Negative Complaints (1-2★)</p>
+          <h3 id="stat-bad">0</h3>
+        </div>
+
+        <div class="card bg-warning">
+          <p>⚠️ High Price Alerts</p>
+          <h3 id="stat-price">0</h3>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <h3 style="margin-bottom: 20px; color: var(--primary)">
+          📈 Price & Quality Analysis
+        </h3>
+        <canvas id="myChart"></canvas>
+      </div>
+    </div>
+
+    <script>
+      window.onload = loadAnalytics;
+
+      async function loadAnalytics() {
+        try {
+          // --- 1. FETCH REVIEWS FROM BACKEND ---
+          const reviewsRes = await fetch("/api/authority/reviews");
+          const reviewsData = await reviewsRes.json();
+          const reviews = reviewsData.success ? reviewsData.reviews || [] : [];
+
+          // --- 2. FETCH MENU FROM BACKEND ---
+          const menuRes = await fetch("/api/menu");
+          const menuData = await menuRes.json();
+          const menu = menuData.success ? menuData.menu || [] : [];
+
+          // --- 3. CALCULATE STATS ---
+          let goodReviews = 0;
+          let badReviews = 0;
+          let highPrices = 0;
+
+          // Count Reviews (rating >= 4 = good, rating <= 2 = bad/negative)
+          reviews.forEach((r) => {
+            if (r.rating >= 4) goodReviews++;
+            else if (r.rating <= 2) badReviews++;
+          });
+
+          // Count High Prices (items with price > 1000)
+          menu.forEach((item) => {
+            if (item.price > 1000) {
+              highPrices++;
+            }
+          });
+
+          // Update HTML
+          document.getElementById("stat-good").innerText = goodReviews;
+          document.getElementById("stat-bad").innerText = badReviews;
+          document.getElementById("stat-price").innerText = highPrices;
+
+          // --- 4. RENDER CHART (Graph) ---
+          renderChart(goodReviews, badReviews, reviews.length, menu.length);
+        } catch (e) {
+          console.error("Authority dashboard load error:", e);
+          // Fallback to zeros if backend fails
+          document.getElementById("stat-good").innerText = "0";
+          document.getElementById("stat-bad").innerText = "0";
+          document.getElementById("stat-price").innerText = "0";
+          renderChart(0, 0, 0, 0);
+        }
+      }
+
+      function renderChart(good, bad, totalReviews, totalItems) {
+        const ctx = document.getElementById("myChart").getContext("2d");
+
+        // Average calculation (safe check to avoid division by zero)
+        let satisfactionRate =
+          totalReviews > 0 ? ((good / totalReviews) * 100).toFixed(1) : 0;
+
+        new Chart(ctx, {
+          type: "bar", // Bar chart banayenge
+          data: {
+            labels: [
+              "Positive Reviews",
+              "Negative Complaints",
+              "High Price Items",
+            ],
+            datasets: [
+              {
+                label: "Count",
+                data: [
+                  good,
+                  bad,
+                  document.getElementById("stat-price").innerText,
+                ],
+                backgroundColor: [
+                  "rgba(25, 135, 84, 0.7)", // Green
+                  "rgba(220, 53, 69, 0.7)", // Red
+                  "rgba(255, 193, 7, 0.7)", // Yellow
+                ],
+                borderColor: [
+                  "rgba(25, 135, 84, 1)",
+                  "rgba(220, 53, 69, 1)",
+                  "rgba(255, 193, 7, 1)",
+                ],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false, // Taake box mein fit ho
+            scales: {
+              x: {
+                ticks: { color: "#f5f5f5" },
+                grid: { color: "rgba(255, 255, 255, 0.1)" }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, color: "#f5f5f5" }, // Points mein na dikhaye (1.5 users nahi hote)
+                grid: { color: "rgba(255, 255, 255, 0.1)" }
+              },
+            },
+            plugins: {
+              legend: { display: false }, // Legend ki zaroorat nahi colors clear hain
+              title: {
+                display: true,
+                text: "Current Cafe Performance Metrics",
+                color: "#ffb300"
+              },
+            },
+          },
+        });
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Logout from Authority Portal?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

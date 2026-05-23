@@ -1,0 +1,755 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Checkout - Smart Cafe{% endblock %}
+
+{% block styles %}
+<style>
+      /* --- VARIABLES (Black and Golden Theme) --- */
+      :root {
+        --bg-dark: var(--bg-burgundy-dark); /* Deep Black Background */
+        --card-bg: var(--brand-grey); /* Dark Grey for cards */
+        --text-white: var(--text-light);
+        --success: #2e7d32;
+        --jazz: #bf2d30;
+        --ep: #36b555;
+      }
+
+      body {
+        /* Background Image with Overlay Override */
+        background: linear-gradient(rgba(59, 0, 13, 0.85), rgba(59, 0, 13, 0.85)),
+          url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: var(--text-white);
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding: 40px 20px;
+      }
+      .checkout-wrapper {
+        background: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 1100px;
+        overflow: hidden;
+      }
+
+      /* Form Section */
+      .form-section {
+        flex: 2;
+        padding: 40px;
+        border-right: 1px solid #333;
+      }
+      .form-section h3 {
+        font-size: 24px;
+        color: var(--primary);
+        margin-bottom: 25px;
+        border-bottom: 2px solid var(--primary);
+        display: inline-block;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #ccc;
+        display: block;
+        margin-bottom: 5px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #333;
+        border-radius: 8px;
+        background: #222;
+        color: white;
+        font-size: 14px;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .form-group input::placeholder {
+        color: #666;
+      }
+
+      /* Payment Cards */
+      .payment-methods {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+      }
+      .payment-card {
+        flex: 1;
+        border: 2px solid #333;
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        text-align: center;
+        background: #222;
+        color: white;
+        position: relative;
+        transition: 0.3s;
+      }
+      .payment-card:hover {
+        border-color: var(--primary);
+      }
+
+      /* Active State for Payment Card */
+      .payment-card input:checked + div {
+        color: var(--primary);
+        font-weight: bold;
+      }
+      .payment-card:has(input:checked) {
+        border-color: var(--primary);
+        background-color: #2a1a0a;
+      }
+
+      .payment-card input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 100%;
+        width: 100%;
+        left: 0;
+        top: 0;
+      }
+
+      /* TRX ID Input Box */
+      #trx-box {
+        display: none; /* Initially Hidden */
+        margin-top: 20px;
+        background: #1a2e1a;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid var(--success);
+        animation: fadeIn 0.5s;
+      }
+      #trx-box input {
+        background: #222;
+        border: 1px solid #333;
+        color: white;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Summary Section */
+      .summary-section {
+        flex: 1;
+        background: var(--card-bg);
+        padding: 40px;
+        min-width: 350px;
+        border-left: 1px solid #333;
+      }
+      .summary-section h3 {
+        color: var(--primary);
+        font-size: 24px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 10px;
+      }
+      .order-items {
+        background: #222;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #333;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .order-items::-webkit-scrollbar {
+        width: 6px;
+      }
+      .order-items::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+      }
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+        margin-bottom: 15px;
+        padding: 12px;
+        background: #1a1a1a;
+        border-radius: 8px;
+        border-left: 3px solid var(--primary);
+      }
+      .item-row span:first-child {
+        color: white;
+        font-weight: 500;
+      }
+      .item-row span:last-child {
+        color: var(--primary);
+        font-weight: bold;
+      }
+      .item-row small {
+        color: #888;
+        font-size: 12px;
+      }
+      .table-info-box {
+        background: #1a2e1a;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid var(--primary);
+        display: none;
+      }
+      .table-info-box.active {
+        display: block;
+      }
+      .table-info-box h4 {
+        color: var(--primary);
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+      .table-info-box p {
+        color: #ccc;
+        font-size: 14px;
+        margin: 5px 0;
+      }
+      .total-box {
+        background: linear-gradient(135deg, var(--primary), #ffb74d);
+        color: #000;
+        padding: 25px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(255, 159, 13, 0.3);
+      }
+
+      .checkout-btn {
+        width: 100%;
+        padding: 15px;
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: 0.3s;
+      }
+      .checkout-btn:hover {
+        background: #1b5e20;
+      }
+
+      /* --- MODAL --- */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+        color: #333;
+      }
+      .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #888;
+      }
+      .copy-box {
+        background: #f4f4f4;
+        border: 2px dashed #ccc;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        cursor: pointer;
+      }
+      .copy-box:active {
+        background: #e0e0e0;
+      }
+      .account-number {
+        font-size: 26px;
+        font-weight: bold;
+        color: #333;
+        letter-spacing: 2px;
+      }
+      .app-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .app-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+        display: block;
+      }
+      .jazz-btn {
+        background-color: var(--jazz);
+      }
+      .ep-btn {
+        background-color: var(--ep);
+      }
+      .done-btn {
+        background: var(--success);
+        color: white;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      @media (max-width: 900px) {
+        .checkout-wrapper {
+          flex-direction: column;
+        }
+        .form-section {
+          border-right: none;
+          border-bottom: 1px solid #eee;
+        }
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="main-content">
+      <div class="checkout-wrapper">
+        <div class="form-section">
+          <h3>📦 Delivery Details</h3>
+          <form onsubmit="placeOrder(event)">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                id="cust-name"
+                required
+                pattern="[A-Za-z ]+"
+                title="Only alphabets and spaces are allowed"
+                placeholder="Enter your name (e.g. Ali Raza)"
+              />
+            </div>
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input
+                type="tel"
+                id="cust-phone"
+                required
+                pattern="[0-9]{11}"
+                maxlength="11"
+                title="Mobile number must be exactly 11 digits"
+                placeholder="03001234567"
+              />
+            </div>
+            <div class="form-group">
+              <label>Order Type</label>
+              <select id="order-type" required onchange="handleOrderTypeChange()">
+                <option value="Dine-in">Dine-in</option>
+                <option value="Takeaway">Takeaway</option>
+              </select>
+            </div>
+            <div class="form-group" id="table-group">
+              <label>Table Number</label>
+              <input
+                type="number"
+                id="table-number"
+                min="1"
+                placeholder="e.g. 5"
+              />
+            </div>
+            <div class="form-group" id="guests-group">
+              <label>Number of Guests</label>
+              <input
+                type="number"
+                id="number-of-guests"
+                min="1"
+                placeholder="e.g. 2"
+              />
+            </div>
+            <div class="form-group" id="location-group" style="display: none;">
+              <label>Location / Address</label>
+              <input
+                type="text"
+                id="cust-loc"
+                placeholder="e.g. Lab 3 or Delivery Address"
+              />
+            </div>
+
+            <label style="font-weight: 600; margin-top: 20px; display: block"
+              >Payment Method</label
+            >
+            <div class="payment-methods">
+              <label class="payment-card">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="COD"
+                  checked
+                  onchange="handlePaymentChange('cod')"
+                />
+                <div>💵 Cash on Delivery</div>
+              </label>
+              <label class="payment-card">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="JazzCash"
+                  onchange="handlePaymentChange('online')"
+                />
+                <div>💳 JazzCash / EasyPaisa</div>
+              </label>
+            </div>
+
+            <div id="trx-box">
+              <label
+                style="
+                  font-size: 13px;
+                  font-weight: bold;
+                  color: var(--success);
+                "
+              >
+                Transaction ID (Required)
+              </label>
+              <input
+                type="text"
+                id="trx-id"
+                placeholder="Paste TID here (e.g. 859201...)"
+              />
+              <small style="color: #666">
+                Please verify payment via the popup and enter ID here.
+              </small>
+            </div>
+
+            <button type="submit" class="checkout-btn">Confirm Order</button>
+          </form>
+        </div>
+
+        <div class="summary-section">
+          <h3>🧾 Order Summary</h3>
+          
+          <div id="table-info" class="table-info-box">
+            <h4>📋 Table Reservation</h4>
+            <p><strong>Table Number:</strong> <span id="display-table">-</span></p>
+            <p><strong>Number of Guests:</strong> <span id="display-guests">-</span></p>
+            <p><strong>Order Type:</strong> <span id="display-order-type">Dine-in</span></p>
+          </div>
+
+          <div class="order-items" id="food-summary">
+            <p style="color: #888; text-align: center;">Loading order items...</p>
+          </div>
+          
+          <div class="total-box" id="final-total">Total: Rs. 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="paymentModal" class="modal-overlay">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <h3 style="color: #333">Online Payment</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px">
+          Tap box to copy number, send amount, then enter TRX ID in the form.
+        </p>
+
+        <div class="copy-box" onclick="copyNumber()" title="Tap to Copy">
+          <div class="account-number">03001234567</div>
+          <div class="copy-label"><i class="fas fa-copy"></i> Tap to Copy</div>
+        </div>
+
+        <div class="app-buttons">
+          <a href="https://www.jazzcash.com.pk/" target="_blank" class="app-btn jazz-btn"
+            >Open JazzCash</a
+          >
+          <a href="https://easypaisa.com.pk/" target="_blank" class="app-btn ep-btn">Open EasyPaisa</a>
+        </div>
+
+        <button class="done-btn" onclick="closeModal()">OK, I have Paid</button>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      window.addEventListener('load', function() {
+        let email = localStorage.getItem("currentUser");
+        if (!email) {
+          alert("⚠️ Please Login First!");
+          window.location.href = "/user/login";
+          return;
+        }
+        loadCheckoutDetails();
+        
+        // Initialize table info display after a short delay
+        setTimeout(() => {
+          updateTableInfoDisplay();
+          // Auto-trigger setup for event listeners for form
+          handleOrderTypeChange();
+        }, 200);
+
+        // Autofill logic
+        const lastBooking = JSON.parse(localStorage.getItem("smartCafe_lastBooking"));
+        if (lastBooking) {
+            const twoHours = 2 * 60 * 60 * 1000;
+            if (new Date().getTime() - lastBooking.timestamp < twoHours) {
+                let tableInput = document.getElementById("table-number");
+                let guestsInput = document.getElementById("number-of-guests");
+                let orderTypeSelect = document.getElementById("order-type");
+                
+                if(tableInput) tableInput.value = lastBooking.table;
+                if(guestsInput) guestsInput.value = lastBooking.guests;
+                if(orderTypeSelect) {
+                    orderTypeSelect.value = "Dine-in";
+                    handleOrderTypeChange(); 
+                }
+            }
+        }
+      });
+
+      function loadCheckoutDetails() {
+        let cart = JSON.parse(localStorage.getItem("mySmartCart")) || [];
+        let foodDiv = document.getElementById("food-summary");
+        let total = 0;
+
+        if (cart.length === 0) {
+          foodDiv.innerHTML = "<p style='color: #888; text-align: center; padding: 20px;'>Your cart is empty.</p>";
+          return;
+        }
+
+        foodDiv.innerHTML = "";
+        cart.forEach((item) => {
+          total += item.price * item.qty;
+          foodDiv.innerHTML += `
+            <div class="item-row">
+                <span>${item.name} <small style="display: block; margin-top: 5px;">Quantity: ${item.qty} × Rs. ${item.price}</small></span>
+                <span style="font-size: 18px;">Rs. ${item.price * item.qty}</span>
+            </div>`;
+        });
+        document.getElementById("final-total").innerText =
+          "Total: Rs. " + total;
+        
+        updateTableInfoDisplay();
+      }
+
+      function updateTableInfoDisplay() {
+        let orderTypeElem = document.getElementById("order-type");
+        if(!orderTypeElem) return;
+        
+        let orderType = orderTypeElem.value;
+        let tableInfo = document.getElementById("table-info");
+        
+        if (orderType === "Dine-in") {
+          tableInfo.classList.add("active");
+          let tableNum = document.getElementById("table-number").value || "-";
+          let guests = document.getElementById("number-of-guests").value || "-";
+          document.getElementById("display-table").textContent = tableNum;
+          document.getElementById("display-guests").textContent = guests;
+          document.getElementById("display-order-type").textContent = "Dine-in";
+        } else {
+          tableInfo.classList.remove("active");
+          document.getElementById("display-order-type").textContent = "Takeaway";
+        }
+      }
+
+      function handlePaymentChange(method) {
+        const trxBox = document.getElementById("trx-box");
+        const trxInput = document.getElementById("trx-id");
+        const modal = document.getElementById("paymentModal");
+
+        if (method === "online") {
+          trxBox.style.display = "block";
+          trxInput.required = true;
+          modal.style.display = "flex";
+        } else {
+          trxBox.style.display = "none";
+          trxInput.required = false;
+          trxInput.value = ""; 
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("paymentModal").style.display = "none";
+      }
+
+      function copyNumber() {
+        navigator.clipboard.writeText("03001234567").then(() => {
+          let label = document.querySelector(".copy-label");
+          label.innerHTML = "<i class='fas fa-check'></i> Copied!";
+          setTimeout(
+            () => (label.innerHTML = "<i class='fas fa-copy'></i> Tap to Copy"),
+            2000
+          );
+        });
+      }
+
+      async function placeOrder(event) {
+        event.preventDefault();
+
+        let name = document.getElementById("cust-name").value;
+        let phone = document.getElementById("cust-phone").value;
+        let loc = document.getElementById("cust-loc").value;
+        let paymentVal = document.querySelector('input[name="payment"]:checked').value;
+        let trxId = document.getElementById("trx-id").value;
+
+        let cart = JSON.parse(localStorage.getItem("mySmartCart")) || [];
+        if (cart.length === 0) {
+          alert("Your cart is empty!");
+          return;
+        }
+
+        let totalText = document.getElementById("final-total").innerText;
+        let totalAmount = totalText.replace(/[^0-9]/g, "");
+        let userEmail = localStorage.getItem("currentUser");
+
+        if (!userEmail) {
+          alert("Session Expired. Please Login Again.");
+          window.location.href = "/user/login";
+          return;
+        }
+
+        // --- VALIDATIONS ---
+        const nameRegex = /^[A-Za-z ]+$/;
+        if (!nameRegex.test(name)) {
+          alert("⚠️ Invalid Name: Please enter alphabets only.");
+          return;
+        }
+
+        const phoneRegex = /^[0-9]{11}$/;
+        if (!phoneRegex.test(phone)) {
+          alert("⚠️ Invalid Mobile Number: It must be exactly 11 digits.");
+          return;
+        }
+
+        if (paymentVal === "JazzCash" && !trxId.trim()) {
+          alert("⚠️ Transaction ID is REQUIRED for online payments. Please complete the payment and enter the TRX ID.");
+          return;
+        }
+        // -------------------
+
+        let orderType = document.getElementById("order-type").value;
+        let tableNumber = document.getElementById("table-number").value;
+        let numberOfGuests = document.getElementById("number-of-guests").value;
+        
+        if (orderType === "Dine-in") {
+          if (!tableNumber || tableNumber <= 0) {
+            alert("⚠️ Please enter a valid table number!");
+            return;
+          }
+          if (!numberOfGuests || numberOfGuests <= 0) {
+            alert("⚠️ Please enter number of guests!");
+            return;
+          }
+        }
+        
+        if (orderType === "Takeaway" && !loc) {
+          alert("⚠️ Please enter delivery address!");
+          return;
+        }
+
+        const orderData = {
+          email: userEmail,
+          total: totalAmount,
+          paymentMethod: paymentVal,
+          address: orderType === "Takeaway" ? `${loc} | Phone: ${phone}` : `Table ${tableNumber} | Phone: ${phone}`,
+          items: cart,
+          transaction_id: paymentVal === "JazzCash" ? (trxId || null) : null,
+          orderType: orderType,
+          tableNumber: orderType === "Dine-in" ? parseInt(tableNumber) : null,
+          numberOfGuests: orderType === "Dine-in" ? parseInt(numberOfGuests) : null,
+          name: name
+        };
+
+        try {
+          const response = await fetch(
+            "/api/place_order",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(orderData),
+            }
+          );
+
+          const data = await response.json();
+          if (data.success) {
+            alert(
+              "🎉 Order Placed Successfully! " +
+                (data.order_id ? "Order ID: #" + data.order_id : "")
+            );
+            localStorage.removeItem("mySmartCart");
+            window.location.href = "/user/home";
+          } else {
+            alert("❌ Order Failed: " + (data.message || "Unknown error"));
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("❌ Server connection failed. Make sure backend is running.");
+        }
+      }
+
+      function handleOrderTypeChange() {
+        let orderType = document.getElementById("order-type").value;
+        let tableGroup = document.getElementById("table-group");
+        let guestsGroup = document.getElementById("guests-group");
+        let locationGroup = document.getElementById("location-group");
+        let tableInput = document.getElementById("table-number");
+        let guestsInput = document.getElementById("number-of-guests");
+        let locationInput = document.getElementById("cust-loc");
+
+        if (orderType === "Dine-in") {
+          tableGroup.style.display = "block";
+          guestsGroup.style.display = "block";
+          locationGroup.style.display = "none";
+          tableInput.required = true;
+          guestsInput.required = true;
+          locationInput.required = false;
+        } else {
+          tableGroup.style.display = "none";
+          guestsGroup.style.display = "none";
+          locationGroup.style.display = "block";
+          tableInput.required = false;
+          guestsInput.required = false;
+          locationInput.required = true;
+        }
+        
+        updateTableInfoDisplay();
+      }
+    </script>
+{% endblock %}

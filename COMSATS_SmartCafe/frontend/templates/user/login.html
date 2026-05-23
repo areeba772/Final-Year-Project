@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Login - Smart Cafe</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary: #ffb300; /* --brand-yellow */
+        --bg-overlay: rgba(59, 0, 13, 0.85); /* --bg-burgundy-dark variant */
+        --glass-bg: rgba(255, 255, 255, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background:
+          linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+          url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1920&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+      }
+
+      /* Container size barha di gayi hai */
+      .split-container {
+        display: flex;
+        width: 95%;
+        max-width: 1100px;
+        height: 650px; /* Height barha di gayi hai */
+        background: var(--glass-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .burger-side {
+        flex: 1.2; /* Image section thoda bara rakha hai */
+        background-image: url("/static/images/Nood.jpg");
+        background-size: cover;
+        background-position: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .login-box {
+        flex: 1;
+        padding: 60px 45px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        color: white;
+      }
+
+      /* --- Cross (X) Button Styling - Mazeed Behtar --- */
+      .close-icon {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        text-decoration: none;
+        color: white;
+        font-size: 30px; /* Size bara kar diya */
+        font-weight: 300;
+        background: rgba(255, 255, 255, 0.1);
+        width: 45px;
+        height: 45px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        z-index: 10;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .close-icon:hover {
+        background: var(--primary);
+        color: black;
+        transform: rotate(90deg);
+        border-color: var(--primary);
+      }
+
+      @media (max-width: 850px) {
+        .burger-side {
+          display: none;
+        }
+        .split-container {
+          max-width: 450px;
+          height: auto;
+        }
+      }
+
+      /* --- Aapki Original CSS --- */
+      .login-box h2 {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .login-box p {
+        color: #bbb;
+        margin-bottom: 35px;
+        font-size: 0.95rem;
+      }
+
+      .input-group {
+        margin-bottom: 25px;
+        text-align: left;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .login-box input {
+        width: 100%;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        font-size: 1rem;
+        outline: none;
+        transition: 0.3s;
+      }
+
+      .login-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 12px rgba(255, 159, 13, 0.3);
+      }
+
+      .form-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary);
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+      }
+
+      .form-btn:hover {
+        background: white;
+        color: var(--primary);
+        transform: translateY(-2px);
+      }
+
+      .divider {
+        margin: 30px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .signup-btn {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        border: 2px solid var(--primary);
+        border-radius: 50px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.3s;
+      }
+
+      .signup-btn:hover {
+        background: rgba(255, 159, 13, 0.1);
+      }
+      .back-link {
+        color: #888;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-top: 15px;
+      }
+      .back-link:hover {
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="split-container">
+      <div class="burger-side"></div>
+
+      <div class="login-box">
+        <a href="/" class="close-icon">&times;</a>
+
+        <h2>User Login</h2>
+        <p>Enter your credentials to access the cafe.</p>
+
+        <form onsubmit="loginUser(event)">
+          <div class="input-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              id="user-email"
+              placeholder=" in this format only example@gmail.com"
+              required
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Password</label>
+            <input
+              type="password"
+              id="user-pass"
+              placeholder="only 6 digits 0-9"
+              required
+            />
+          </div>
+
+          <button type="submit" class="form-btn">Login Now</button>
+        </form>
+
+        <div class="divider"></div>
+        <p style="margin-bottom: 15px; font-size: 0.9rem; color: #888">
+          Don't have an account?
+        </p>
+        <a href="/user/signup" class="signup-btn">Create New Account</a>
+        <a href="/" class="back-link">← Back to Main Page</a>
+      </div>
+    </div>
+
+    <script>
+      async function loginUser(event) {
+        event.preventDefault();
+
+        let email = document.getElementById("user-email").value.trim();
+        let pass = document.getElementById("user-pass").value;
+
+        // Client-side validations
+        let emailRegex = /@gmail\.com$/;
+        if (!emailRegex.test(email)) {
+          alert("❌ Invalid Email! Email must end with @gmail.com.");
+          return;
+        }
+
+        let passRegex = /^\d+$/;
+        if (!passRegex.test(pass)) {
+          alert("❌ Invalid Password! Password must contain digits (0-9) only.");
+          return;
+        }
+
+        try {
+          // IP address aur route lazmi check karein (5000 port hona chahiye)
+          let response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, password: pass }),
+          });
+
+          let result = await response.json();
+
+          if (result.success) {
+            // LocalStorage mein data save karna lazmi hai
+            localStorage.setItem("currentUser", email);
+            localStorage.setItem("currentUserName", result.name); // Navbar ke liye
+
+            alert("✅ Welcome, " + result.name + "!");
+            window.location.href = "/user/home";
+          } else {
+            alert("⛔ Error: " + result.message);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert(
+            "❌ Server Error! Check if Flask (app.py) is running on port 5000.",
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

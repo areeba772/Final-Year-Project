@@ -1,0 +1,443 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Book A Table - Smart Cafe{% endblock %}
+
+{% block styles %}
+<style>
+      :root {
+        --text-white: var(--text-light);
+      }
+      body {
+        background: linear-gradient(rgba(59, 0, 13, 0.85), rgba(59, 0, 13, 0.85)),
+          url("https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1374&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        color: white;
+        /* Override layout to allow flex footer push */
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Wrapper pushes footer down */
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        width: 100%;
+      }
+
+      /* --- BOOKING CARD --- */
+      .booking-container {
+        background: rgba(30, 30, 30, 0.95);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        width: 100%;
+        max-width: 600px;
+        border: 2px solid #444;
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+      .header h2 {
+        font-size: 2rem;
+        color: var(--primary);
+      }
+      .header p {
+        color: #ccc;
+        font-size: 0.9rem;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+      }
+      .form-group label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        color: #aaa;
+        font-weight: 600;
+      }
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        color: white;
+        border-radius: 8px;
+        font-size: 1rem;
+        outline: none;
+        transition: 0.3s;
+      }
+      .form-input:focus {
+        border-color: var(--primary);
+        background: #333;
+      }
+
+      /* --- TABLES GRID --- */
+      .tables-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .table-box {
+        background: white;
+        color: #333;
+        border-radius: 10px;
+        padding: 15px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+        border: 2px solid transparent;
+        position: relative;
+      }
+      .table-box i {
+        font-size: 24px;
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+      }
+      .table-box span {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .table-box.available:hover {
+        transform: scale(1.05);
+        background: #f0f0f0;
+      }
+
+      /* Selected (Orange) */
+      .table-box.selected {
+        background: var(--primary);
+        color: white;
+        border-color: white;
+        box-shadow: 0 0 15px rgba(230, 81, 0, 0.5);
+      }
+      .table-box.selected i {
+        color: white;
+      }
+
+      /* Reserved (Red) */
+      .table-box.reserved {
+        background: #d32f2f;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: not-allowed;
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      .table-box.reserved i {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .table-box.reserved::after {
+        content: "Booked";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+
+      /* Buttons */
+      .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 25px;
+      }
+      .btn-submit:hover {
+        background: white;
+        color: var(--primary);
+      }
+
+      .back-btn {
+        position: absolute;
+        top: -50px;
+        left: 0;
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 20px;
+        border-radius: 30px;
+        backdrop-filter: blur(5px);
+        transition: 0.3s;
+      }
+      .back-btn:hover {
+        background: var(--primary);
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+      <div style="position: relative; width: 100%; max-width: 600px">
+        <a href="/user/my_orders" class="back-btn"
+          ><i class="fas fa-arrow-left"></i> Back to Dashboard</a
+        >
+
+        <div class="booking-container">
+          <div class="header">
+            <h2>Book A Table</h2>
+            <p>Check availability and reserve your spot instantly.</p>
+          </div>
+
+          <form onsubmit="bookTable(event)">
+            <div style="display: flex; gap: 15px">
+              <div class="form-group" style="flex: 1">
+                <label>Date</label>
+                <input
+                  type="date"
+                  id="res-date"
+                  class="form-input"
+                  required
+                  onchange="checkAvailability()"
+                />
+              </div>
+              <div class="form-group" style="flex: 1">
+                <label>Time Slot</label>
+                <select id="res-time" class="form-input" required onchange="checkAvailability()">
+                  <option value="" disabled selected>Select a slot</option>
+                  <option value="08:00">08:00 AM - 10:00 AM</option>
+                  <option value="10:00">10:00 AM - 12:00 PM</option>
+                  <option value="12:00">12:00 PM - 02:00 PM</option>
+                  <option value="14:00">02:00 PM - 04:00 PM</option>
+                  <option value="16:00">04:00 PM - 05:00 PM</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Number of People</label>
+              <input
+                type="number"
+                id="res-people"
+                min="1"
+                max="6"
+                placeholder="e.g. 4"
+                class="form-input"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Select a Table</label>
+              <p style="font-size: 12px; color: #777; margin-bottom: 10px">
+                ⚪ Available &nbsp; 🟠 Selected &nbsp; 🔴 Booked
+              </p>
+
+              <div class="tables-grid" id="tables-container">
+                <!-- Tables will be loaded dynamically from backend -->
+              </div>
+              <input type="hidden" id="selected-table-id" required />
+            </div>
+
+            <button type="submit" class="btn-submit">
+              Confirm Reservation
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      let selectedTableId = null;
+
+      window.addEventListener('load', async function () {
+        let today = new Date().toISOString().split("T")[0];
+        let dateInput = document.getElementById("res-date");
+        dateInput.setAttribute("min", today);
+        dateInput.setAttribute("max", today); // Only Today allowed
+        dateInput.value = today; // Default to today
+
+        await loadTablesFromBackend();
+      });
+
+      async function loadTablesFromBackend() {
+        const container = document.getElementById("tables-container");
+        container.innerHTML =
+          "<p style='color:#fff; text-align:center;'>Loading tables...</p>";
+
+        try {
+          const res = await fetch("/api/admin/tables");
+          const tables = await res.json();
+
+          if (!Array.isArray(tables) || tables.length === 0) {
+            container.innerHTML =
+              "<p style='color:#fff; text-align:center;'>No tables configured.</p>";
+            return;
+          }
+
+          container.innerHTML = "";
+          tables.forEach((t) => {
+            const id = t.table_id;
+            container.innerHTML += `
+              <div
+                class="table-box available"
+                onclick="selectTable(${id})"
+                id="table-${id}"
+              >
+                <i class="fas fa-chair"></i><span>${t.table_name}</span>
+              </div>
+            `;
+          });
+        } catch (e) {
+          console.error("Error loading tables:", e);
+          container.innerHTML =
+            "<p style='color:#fff; text-align:center;'>Error loading tables.</p>";
+        }
+      }
+
+      async function checkAvailability() {
+        let date = document.getElementById("res-date").value;
+        let time = document.getElementById("res-time").value;
+
+        selectedTableId = null;
+        document.getElementById("selected-table-id").value = "";
+
+        const boxes = document.querySelectorAll(".table-box");
+        boxes.forEach((box) => {
+          box.classList.remove("selected", "reserved");
+          box.classList.add("available");
+          const idStr = box.id.replace("table-", "");
+          const id = parseInt(idStr);
+          box.onclick = function () {
+            selectTable(id);
+          };
+        });
+
+        if (!date || !time) return;
+
+        let hour = parseInt(time.split(":")[0]);
+        if (hour < 8 || hour >= 17) {
+            alert("⚠️ Booking only allowed between 8:00 AM and 5:00 PM");
+            return;
+        }
+
+        try {
+            let response = await fetch("/api/check_availability", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date: date, time: time })
+            });
+            let result = await response.json();
+
+            if (result.success) {
+                let bookedTables = result.booked_tables || [];
+                
+                bookedTables.forEach((tId) => {
+                    let box = document.getElementById(`table-${tId}`);
+                    if (box) {
+                        box.className = "table-box reserved"; 
+                        box.onclick = null;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching availability:", error);
+        }
+      }
+
+      function selectTable(id) {
+        const boxes = document.querySelectorAll(".table-box");
+        boxes.forEach((box) => {
+          if (!box.classList.contains("reserved")) {
+            box.classList.remove("selected");
+          }
+        });
+
+        let clickedBox = document.getElementById(`table-${id}`);
+        clickedBox.classList.add("selected");
+
+        selectedTableId = id;
+        document.getElementById("selected-table-id").value = id;
+      }
+
+      async function bookTable(event) {
+        event.preventDefault();
+
+        let date = document.getElementById("res-date").value;
+        let time = document.getElementById("res-time").value;
+        let people = document.getElementById("res-people").value;
+        let email = localStorage.getItem("currentUser");
+
+        if (!email) {
+            alert("⚠️ Please Login First!");
+            window.location.href = "/user/login";
+            return;
+        }
+
+        if (!date || !time || !people) {
+          alert("Please fill all details!");
+          return;
+        }
+        if (!selectedTableId) {
+          alert("Please select an available table (White Box)!");
+          return;
+        }
+
+        let bookingData = {
+          email: email,
+          date: date,
+          time: time,
+          people: people,
+          tableId: selectedTableId
+        };
+
+        try {
+            let response = await fetch("/api/book_table", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bookingData)
+            });
+
+            let result = await response.json();
+            if (result.success) {
+                localStorage.setItem("smartCafe_lastBooking", JSON.stringify({
+                    table: selectedTableId,
+                    guests: people,
+                    timestamp: new Date().getTime()
+                }));
+
+                alert(`✅ Table ${selectedTableId} Reserved Successfully!`);
+                window.location.href = "/user/my_orders"; 
+            } else {
+                alert("⚠️ " + result.message);
+                checkAvailability(); 
+            }
+        } catch (error) {
+            console.error("Booking Error:", error);
+            alert("❌ Server Error");
+        }
+      }
+    </script>
+{% endblock %}

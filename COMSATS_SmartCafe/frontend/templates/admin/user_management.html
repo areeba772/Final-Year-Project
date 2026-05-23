@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Management - Smart Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+      
+    </style>
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management" class="active"
+            ><i>👥</i> User Management</a
+          >
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">User Activity Status</h2>
+
+      <div class="stats-grid">
+        <div class="card bg-blue">
+          <p>Total Registered</p>
+          <h3 id="count-total">0</h3>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-title">User Login History</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+
+      window.onload = loadUserStatus;
+
+      async function loadUserStatus() {
+        let tbody = document.getElementById("users-body");
+        tbody.innerHTML =
+          "<tr><td colspan='5' style='text-align:center; padding:20px;'>Loading users...</td></tr>";
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/users");
+          const data = await res.json();
+
+          tbody.innerHTML = "";
+
+          if (!data.success || !data.users || data.users.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='3' style='text-align:center; padding:20px;'>No registered users found.</td></tr>";
+            document.getElementById("count-total").innerText = 0;
+            return;
+          }
+
+          data.users.forEach((user) => {
+            let row = `
+                        <tr class="user-row">
+                            <td style="font-weight:bold;">${user.full_name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.role || "user"}</td>
+                        </tr>
+                    `;
+            tbody.innerHTML += row;
+          });
+
+          // Update cards
+          document.getElementById("count-total").innerText = data.users.length;
+        } catch (e) {
+          console.error("User management load error:", e);
+          tbody.innerHTML =
+            "<tr><td colspan='5' style='text-align:center; padding:20px; color:red;'>Error loading users (Run app.py)</td></tr>";
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to Logout?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

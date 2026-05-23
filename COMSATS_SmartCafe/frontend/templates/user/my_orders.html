@@ -1,0 +1,606 @@
+{% extends "user/layout.html" %} {% block title %}My Dashboard - Smart Cafe{%
+endblock %} {% block styles %}
+<style>
+  :root {
+    --card-bg: var(--brand-grey);
+    --text-white: var(--text-light);
+  }
+
+  body {
+    background-color: var(--bg-burgundy-dark);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* --- MAIN CONTAINER --- */
+  .container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    flex: 1;
+    width: 100%;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    border-left: 5px solid var(--primary);
+    padding-left: 15px;
+    margin-bottom: 30px;
+  }
+
+  /* --- TABS --- */
+  .tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #333;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 18px;
+    padding-bottom: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+  .tab-btn:hover {
+    color: white;
+  }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+  }
+
+  /* --- TABLE STYLING --- */
+  .table-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #333;
+    min-height: 300px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th {
+    text-align: left;
+    padding: 15px;
+    color: var(--primary);
+    border-bottom: 2px solid #333;
+  }
+  td {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+    color: #ccc;
+  }
+
+  /* Badges */
+  .badge {
+    padding: 5px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .st-Pending {
+    background: #ff9800;
+    color: black;
+  }
+  .st-Completed {
+    background: #4caf50;
+    color: white;
+  }
+  .st-Cooking {
+    background: #9c27b0;
+    color: white;
+  }
+  .st-Confirmed {
+    background: #2196f3;
+    color: white;
+  }
+  .st-Cancelled {
+    background: #f44336;
+    color: white;
+  }
+
+  .btn-action {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 5px 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn-action:hover {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* --- RESERVE SEAT BANNER --- */
+  .reserve-banner {
+    margin-top: 50px;
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+      url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1470&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    padding: 50px;
+    text-align: center;
+    border: 2px solid var(--primary);
+    box-shadow: 0 10px 30px rgba(230, 81, 0, 0.2);
+  }
+  .reserve-banner h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: white;
+  }
+  .reserve-banner p {
+    color: #ddd;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+  }
+  .btn-reserve {
+    background: var(--primary);
+    color: white;
+    padding: 12px 35px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+    display: inline-block;
+    transition: 0.3s;
+  }
+  .btn-reserve:hover {
+    background: white;
+    color: var(--primary);
+    transform: scale(1.05);
+  }
+
+  .hidden {
+    display: none;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container">
+  <h2 class="page-title">My Dashboard</h2>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('food')">
+      🍔 Food Orders
+    </button>
+    <button class="tab-btn" onclick="showTab('inbox')">🔔 Inbox</button>
+    <button class="tab-btn" onclick="showTab('history')">📅 History</button>
+  </div>
+
+  <div id="food-section" class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="my-orders-body"></tbody>
+    </table>
+  </div>
+
+  <div id="inbox-section" class="table-container hidden">
+    <h3 style="color: var(--primary); margin-bottom: 15px">Admin Messages</h3>
+    <div id="inbox-display"></div>
+  </div>
+
+  <div id="history-section" class="table-container hidden">
+    <h3 style="color: var(--primary); margin-bottom: 15px">Booking History</h3>
+    <div id="booking-display"></div>
+  </div>
+
+  <div class="reserve-banner">
+    <h2>Planning to Dine In?</h2>
+    <p>Reserve your favorite table in advance and skip the waiting time.</p>
+    <a href="/user/reserve_seat" class="btn-reserve">
+      <i class="fas fa-chair"></i> Book a Table
+    </a>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div
+  id="reviewModal"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  "
+>
+  <div
+    style="
+      background: #222;
+      padding: 30px;
+      border-radius: 10px;
+      border: 1px solid var(--primary);
+      text-align: center;
+      width: 350px;
+    "
+  >
+    <h3 style="color: white">Rate Order</h3>
+    <p id="review-item-name" style="color: #aaa; margin: 10px 0"></p>
+    <div
+      style="font-size: 24px; color: #555; cursor: pointer; margin-bottom: 15px"
+    >
+      <span onclick="setRating(1)" class="stars">★</span
+      ><span onclick="setRating(2)" class="stars">★</span>
+      <span onclick="setRating(3)" class="stars">★</span
+      ><span onclick="setRating(4)" class="stars">★</span>
+      <span onclick="setRating(5)" class="stars">★</span>
+    </div>
+    <textarea
+      id="review-comment"
+      rows="3"
+      placeholder="Write review..."
+      style="
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        margin-bottom: 10px;
+      "
+    ></textarea>
+    <button
+      onclick="submitReview()"
+      style="
+        background: var(--primary);
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    >
+      Submit
+    </button>
+    <button
+      onclick="closeModal()"
+      style="
+        background: #444;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+      "
+    >
+      Cancel
+    </button>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  let currentRating = 0;
+  let selectedItem = "";
+  let selectedOrderId = null;
+  const API_URL = "/api";
+
+  window.addEventListener("load", function () {
+    checkUserLogin();
+    loadMyOrders();
+    loadBooking();
+    loadInbox();
+
+    // Start interval polling
+    setInterval(() => {
+      loadMyOrders(true);
+      loadBooking(true);
+      loadInbox(true);
+    }, 30000);
+  });
+
+  function checkUserLogin() {
+    const email = localStorage.getItem("currentUser");
+    if (!email) {
+      window.location.href = "/user/login";
+    }
+  }
+
+  function showTab(tab) {
+    document.getElementById("food-section").classList.add("hidden");
+    document.getElementById("inbox-section").classList.add("hidden");
+    document.getElementById("history-section").classList.add("hidden");
+
+    document
+      .querySelectorAll(".tab-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+
+    if (tab === "food") {
+      document.getElementById("food-section").classList.remove("hidden");
+      document.querySelectorAll(".tab-btn")[0].classList.add("active");
+    } else if (tab === "inbox") {
+      document.getElementById("inbox-section").classList.remove("hidden");
+      document.querySelectorAll(".tab-btn")[1].classList.add("active");
+    } else if (tab === "history") {
+      document.getElementById("history-section").classList.remove("hidden");
+      document.querySelectorAll(".tab-btn")[2].classList.add("active");
+    }
+  }
+
+  async function loadMyOrders(isPolling = false) {
+    const email = localStorage.getItem("currentUser");
+    const tbody = document.getElementById("my-orders-body");
+
+    if (!isPolling) {
+      tbody.innerHTML =
+        "<tr><td colspan='5' style='text-align:center;'>Loading orders...</td></tr>";
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/my_orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.orders.length > 0) {
+        tbody.innerHTML = "";
+        data.orders.forEach((order) => {
+          let itemsList = order.items
+            .map((i) => {
+              const img = i.image_url
+                ? `/static/images/${i.image_url}`
+                : `/static/images/burger.jpg`;
+              
+              let rateBtn = order.status === "Completed" 
+                ? `<button class="btn-action" style="padding: 2px 8px; font-size: 10px; margin-left: 10px;" onclick="openModal('${i.name.replace(/'/g, "\\'")}', ${order.order_id})">Rate</button>` 
+                : '';
+
+              return `
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                      <img src="${img}" alt="${i.name}" style="width:42px; height:42px; object-fit:cover; border-radius:8px; border:1px solid #444;" />
+                      <div style="flex:1;">
+                        <div style="color:#fff; font-weight:700;">${i.name}</div>
+                        <div style="color:#aaa; font-size:12px;">${i.quantity}x • Rs. ${i.price_at_time}</div>
+                      </div>
+                      ${rateBtn}
+                    </div>
+                  `;
+            })
+            .join("");
+
+          let plainItems = order.items
+            .map((i) => i.name)
+            .join(", ")
+            .replace(/'/g, "\\'");
+          let actionBtn = "-";
+
+          tbody.innerHTML += `
+                        <tr>
+                            <td>#${order.order_id}</td>
+                            <td>${itemsList}</td>
+                            <td>Rs. ${order.total_amount}</td>
+                            <td>
+                              <span class="badge st-${order.status}">${order.status}</span>
+                              <br>
+                              <small style="color:#aaa;">
+                                ${
+                                  order.payment_method === "JazzCash" &&
+                                  order.transaction_id
+                                    ? `JazzCash | Paid (TID: ${order.transaction_id})`
+                                    : `${order.payment_method || "-"} | ${order.payment_status || "Pending"}`
+                                }
+                              </small>
+                            </td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+        });
+      } else {
+        tbody.innerHTML =
+          "<tr><td colspan='5' style='text-align:center;'>No orders found.</td></tr>";
+      }
+    } catch (e) {
+      console.error(e);
+      tbody.innerHTML =
+        "<tr><td colspan='5' style='text-align:center; color:red;'>Server Error (Run app.py)</td></tr>";
+    }
+  }
+
+  async function loadBooking(isPolling = false) {
+    const email = localStorage.getItem("currentUser");
+    const displayDiv = document.getElementById("booking-display");
+
+    if (!isPolling) {
+      displayDiv.innerHTML = "<p>Loading bookings...</p>";
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/my_bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.bookings.length > 0) {
+        displayDiv.innerHTML = "";
+        data.bookings.forEach((b) => {
+          displayDiv.innerHTML += `
+                        <div style="background:#2a2a2a; padding:15px; margin-bottom:10px; border-left:4px solid var(--primary); border-radius:5px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h4 style="color:white; margin-bottom:5px;">Table for ${b.guests} People</h4>
+                                <p style="color:#aaa;">📅 ${b.booking_date} | ⏰ ${b.booking_time}</p>
+                            </div>
+                            <span class="badge st-${b.status}">${b.status}</span>
+                        </div>
+                    `;
+        });
+      } else {
+        displayDiv.innerHTML =
+          "<p style='color:#777;'>No active reservations.</p>";
+      }
+    } catch (e) {
+      displayDiv.innerHTML = "<p style='color:red;'>Server Error.</p>";
+    }
+  }
+
+  async function loadInbox(isPolling = false) {
+    const email = localStorage.getItem("currentUser");
+    const displayDiv = document.getElementById("inbox-display");
+
+    if (!isPolling) {
+      displayDiv.innerHTML = "<p>Loading messages...</p>";
+    }
+
+    if (!email) {
+      displayDiv.innerHTML =
+        "<p style='color:#ffb300;'>Please login to view your inbox.</p>";
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/my_messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        displayDiv.innerHTML =
+          `<p style='color:#ff8a80;'>${data.message || "Could not load messages."}</p>`;
+        return;
+      }
+
+      if (data.messages && data.messages.length > 0) {
+        displayDiv.innerHTML = "";
+
+        data.messages.forEach((m) => {
+          const hasReply = m.admin_reply && m.admin_reply.trim() !== "";
+          const dateStr = m.created_at
+            ? new Date(m.created_at).toLocaleString()
+            : "";
+          const statusBadge =
+            m.status === "Replied"
+              ? '<span style="background:#2ed573;color:#111;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">Replied</span>'
+              : '<span style="background:#ffa502;color:#111;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">Pending</span>';
+
+          let replyHtml = hasReply
+            ? `<div style="background:#2a4a2a; padding:14px; margin-top:12px; border-radius:8px; border-left: 4px solid #2ed573;">
+                 <strong style="color:#2ed573;">Admin Reply:</strong>
+                 <p style="color:#eee; margin:8px 0 0; line-height:1.5;">${m.admin_reply}</p>
+               </div>`
+            : `<div style="margin-top:12px; font-style:italic; color:#aaa; font-size: 0.9rem;">
+                 <i class="fas fa-clock"></i> Waiting for admin reply...
+               </div>`;
+
+          displayDiv.innerHTML += `
+            <div style="background:#333; padding:18px; margin-bottom:16px; border-radius:12px; border: 1px solid #555;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <h4 style="color:var(--primary); margin:0;">${m.subject || "No Subject"}</h4>
+                ${statusBadge}
+              </div>
+              <small style="color:#999;">${dateStr}</small>
+              <p style="color:#eee; margin:12px 0 0; line-height:1.5;"><strong>You:</strong> ${m.message}</p>
+              ${replyHtml}
+            </div>`;
+        });
+      } else {
+        displayDiv.innerHTML =
+          "<p style='color:#ccc;'>No messages yet. Send one from the <a href='/user/contact' style='color:var(--primary);'>Contact</a> page.</p>";
+      }
+    } catch (e) {
+      console.error("Inbox Error:", e);
+      displayDiv.innerHTML =
+        "<p style='color:#ff8a80;'>Failed to load messages. Restart the server (python app.py) and refresh.</p>";
+    }
+  }
+
+  function openModal(name, orderId) {
+    selectedItem = name;
+    selectedOrderId = orderId;
+    document.getElementById("reviewModal").style.display = "flex";
+    document.getElementById("review-item-name").innerText = name;
+    
+    // Reset modal state
+    setRating(0);
+    document.getElementById("review-comment").value = "";
+  }
+  function closeModal() {
+    document.getElementById("reviewModal").style.display = "none";
+  }
+  function setRating(n) {
+    currentRating = n;
+    document
+      .querySelectorAll(".stars")
+      .forEach((s, i) => (s.style.color = i < n ? "#ffc107" : "#555"));
+  }
+  async function submitReview() {
+    if (!currentRating) {
+      alert("Please select a rating!");
+      return;
+    }
+
+    let comment = document.getElementById("review-comment").value;
+    let userEmail = localStorage.getItem("currentUser");
+
+    if (!userEmail) {
+      alert("Please login first!");
+      return;
+    }
+
+    /* 
+           Using /api/submit_review which seems to handle generic order review?
+           Wait, there are two review APIs now. 
+           1. /api/add_review (Per item, detailed)
+           2. /api/submit_review (Order level?) in app.py snippet I saw earlier.
+           
+           my_orders.html uses `submitReview` for the order.
+           Let's check `api/submit_review` in app.py logic I saw earlier.
+           It accepts {email, item_name, rating, comment, order_id?}.
+           
+           I'll stick to what was likely intended for the order rating modal.
+        */
+    const reviewData = {
+      email: userEmail,
+      item_name: selectedItem, // Now it's a single item name
+      rating: currentRating,
+      comment: comment,
+      order_id: selectedOrderId
+    };
+
+    try {
+      const res = await fetch("/api/submit_review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Review Submitted!");
+        closeModal();
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error submitting review");
+    }
+  }
+</script>
+{% endblock %}

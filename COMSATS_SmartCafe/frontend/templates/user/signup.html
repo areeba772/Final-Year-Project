@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account - Smart Cafe</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #ffb300; /* --brand-yellow */
+        --glass-bg: rgba(255, 255, 255, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        background:
+          linear-gradient(rgba(59, 0, 13, 0.85), rgba(59, 0, 13, 0.85)),
+          url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1920&auto=format&fit=crop");
+        background-size: cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+        color: white;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- Naya Split Container --- */
+      .main-wrapper {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      .split-container {
+        display: flex;
+        width: 100%;
+        max-width: 1000px;
+        height: 650px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+      }
+
+      /* Burger Side Div */
+      .burger-side {
+        flex: 1.2;
+        background-image: url("/static/images/Nood.jpg");
+        background-size: cover;
+        background-position: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Signup Box as a Section */
+      .signup-box {
+        flex: 1;
+        padding: 40px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+      }
+
+      @media (max-width: 850px) {
+        .burger-side {
+          display: none;
+        }
+        .split-container {
+          max-width: 450px;
+          height: auto;
+        }
+      }
+
+      /* --- Aapki Original Styling --- */
+      .signup-box h2 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: var(--primary);
+      }
+      .input-group {
+        margin-bottom: 15px;
+        text-align: left;
+      }
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #ddd;
+        font-size: 0.9rem;
+      }
+      .signup-box input {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        outline: none;
+        transition: 0.3s;
+      }
+      .signup-box input:focus {
+        border-color: var(--primary);
+      }
+      .form-btn {
+        width: 100%;
+        padding: 14px;
+        background: var(--primary);
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 50px;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: 0.3s;
+      }
+      .form-btn:hover {
+        background: white;
+        color: var(--primary);
+      }
+      .login-link {
+        display: block;
+        margin-top: 20px;
+        color: #ccc;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .login-link span {
+        color: var(--primary);
+        font-weight: bold;
+      }
+      .main-footer {
+        background-color: #111;
+        color: #ccc;
+        padding: 20px 0;
+        border-top: 3px solid var(--primary);
+        text-align: center;
+      }
+
+      /* Close/Cross Button Styling */
+      .close-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        text-decoration: none;
+        color: white;
+        font-size: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        transition: 0.3s;
+      }
+      .close-icon:hover {
+        background: var(--primary);
+        color: black;
+        transform: rotate(90deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-wrapper">
+      <div class="split-container">
+        <div class="burger-side"></div>
+
+        <div class="signup-box">
+          <a href="/" class="close-icon">&times;</a>
+
+          <h2>Create Account</h2>
+          <p style="color: #aaa; margin-bottom: 20px; font-size: 0.9rem">
+            Join the Smart Cafe experience.
+          </p>
+
+          <form onsubmit="registerUser(event)">
+            <div class="input-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                id="reg-name"
+                placeholder="Alphabets only"
+                required
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Email Address</label>
+              <input
+                type="email"
+                id="reg-email"
+                placeholder=" in this format only example@gmail.com"
+                required
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Password</label>
+              <input
+                type="password"
+                id="reg-pass"
+                placeholder="6 digits (0-9) only"
+                required
+              />
+            </div>
+
+            <button type="submit" class="form-btn">Sign Up</button>
+          </form>
+
+          <a href="/user/login" class="login-link"
+            >Already have an account? <span>Login here</span></a
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function registerUser(event) {
+        event.preventDefault();
+        let role = "student";
+        let name = document.getElementById("reg-name").value.trim();
+        let email = document.getElementById("reg-email").value.trim();
+        let pass = document.getElementById("reg-pass").value;
+
+        // Validation logic
+        let nameRegex = /^[A-Za-z\s]+$/;
+        if (!nameRegex.test(name)) {
+          alert("❌ Invalid Name!");
+          return;
+        }
+        if (!email.includes("@gmail.com")) {
+          alert("❌ Use @gmail.com");
+          return;
+        }
+        let passRegex = /^\d{6}$/;
+        if (!passRegex.test(pass)) {
+          alert("❌ Password must be 6 digits!");
+          return;
+        }
+
+        let userData = { name: name, email: email, password: pass, role: role };
+
+        try {
+          let response = await fetch("/api/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData),
+          });
+          let result = await response.json();
+          if (result.success) {
+            alert("✅ Success!");
+            window.location.href = "/user/login";
+          } else {
+            alert("⚠️ " + result.message);
+          }
+        } catch (error) {
+          alert("❌ Server Error!");
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Order Management - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management" class="active"
+            ><i>📄</i> Order Management</a
+          >
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+      <style>
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .styled-table thead tr {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+        }
+        .styled-table th, .styled-table td {
+            padding: 12px 15px;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #333;
+        }
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #262626;
+        }
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid var(--primary);
+        }
+        .status-select {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #333;
+            color: white;
+            cursor: pointer;
+        }
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn-delete {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-delete:hover {
+            background: #b71c1c;
+        }
+      </style>
+    <div class="main-content">
+      <h2 class="page-title">All Food Orders</h2>
+      <div class="table-container">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="all-orders-body"></tbody>
+        </table>
+      </div>
+
+      <h2 class="page-title" style="margin-top: 40px">Table Reservations</h2>
+      <div class="table-container">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Customer</th>
+              <th>Date & Time</th>
+              <th>Guests</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+
+      window.onload = function () {
+        loadOrders();
+        loadReservations();
+
+        // Start interval polling
+        setInterval(() => {
+          loadOrders(true);
+          loadReservations(true);
+        }, 5000);
+      };
+
+      async function loadOrders(isPolling = false) {
+        const tbody = document.getElementById("all-orders-body");
+        
+        if (!isPolling) {
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center'>Loading orders...</td></tr>";
+        }
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/orders");
+          const data = await res.json();
+
+          tbody.innerHTML = "";
+
+          if (!data.success || !data.orders || data.orders.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='6' style='text-align:center'>No food orders found.</td></tr>";
+            return;
+          }
+
+          data.orders.forEach((order) => {
+            const itemsList = (order.items || [])
+              .map((i) => `${i.name} (${i.quantity})`)
+              .join(", ");
+
+            let badgeClass = "status-pending";
+            if (order.status === "Completed" || order.status === "Ready")
+              badgeClass = "status-completed";
+            if (order.status === "Cancelled") badgeClass = "status-cancelled";
+            if (order.status === "Cooking") badgeClass = "status-cooking";
+
+            const totalText = "Rs. " + (order.total_amount || 0);
+            let payText = order.payment_method || "-";
+            if (order.payment_method === "JazzCash") {
+              payText += order.transaction_id
+                ? ` (TID: ${order.transaction_id})`
+                : " (TID: -)";
+            }
+            const remaining = order.payment_status === "Paid" ? 0 : (order.total_amount || 0);
+            let itemSummary = "-";
+            if (order.items && order.items.length > 0) {
+               itemSummary = order.items.map(i => `${i.name} (${i.quantity})`).join(", ");
+            } else {
+               itemSummary = "<span style='color:#ccc; font-style:italic;'>No items found</span>";
+            }
+
+            // Helper function for status classes (assuming it's defined elsewhere or needs to be added)
+            // For now, let's use the existing badgeClass logic or define a simple getStatusClass
+            function getStatusClass(status) {
+                if (status === "Completed" || status === "Ready" || status === "Paid") return "status-completed";
+                if (status === "Cancelled") return "status-cancelled";
+                if (status === "Cooking") return "status-cooking";
+                return "status-pending";
+            }
+
+            const date = new Date(order.created_at).toLocaleString(); // Format date for display
+
+            tbody.innerHTML += `
+              <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 15px;">
+                  <span style="color: var(--primary); font-weight: bold;">#${order.order_id}</span><br>
+                  <small style="color: #666;">${date}</small>
+                </td>
+                <td style="padding: 15px;">
+                  <strong style="color: #eee;">${order.full_name || 'Guest'}</strong><br>
+                  <small style="color: #666;">${order.phone || '-'}</small>
+                </td>
+                <td style="padding: 15px; color: #ccc; font-size: 13px; max-width: 250px;">
+                  ${itemSummary}
+                </td>
+                <td style="padding: 15px; color: #eee; font-weight: bold;">Rs. ${order.total_amount}</td>
+                <td style="padding: 15px;">
+                  <span class="badge ${getStatusClass(order.payment_status)}">${order.payment_status}</span><br>
+                  <small style="color: #666;">${order.payment_method}</small>
+                  ${order.transaction_id ? `<br><small style='color:#28a745; font-size:10px;'>TRX: ${order.transaction_id}</small>` : ''}
+                </td>
+                <td style="padding: 15px;">
+                  <span class="badge ${getStatusClass(order.status)}">${order.status}</span>
+                </td>
+                <td style="padding: 15px;">
+                   <a href="/admin/order_details?id=${order.order_id}" class="btn-action">View</a>
+                   
+                   <select class="status-select" onchange="updateStatus('${order.order_id}', this.value)">
+                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Cooking" ${order.status === 'Cooking' ? 'selected' : ''}>Cooking</option>
+                        <option value="Ready" ${order.status === 'Ready' ? 'selected' : ''}>Ready</option>
+                        <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                   </select>
+
+                   <button class="btn-delete" style="margin-left:5px;" onclick="deleteOrder('${order.order_id}')" title="Delete">🗑</button>
+                </td>
+              </tr>
+            `;
+          });
+        } catch (e) {
+          console.error("Admin loadOrders error:", e);
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center; color:red;'>Error loading orders (Run app.py)</td></tr>";
+        }
+      }
+
+      async function updateStatus(orderId, newStatus) {
+        if (!newStatus) return;
+
+        if (
+          !confirm(
+            "Update order #" + orderId + " status to '" + newStatus + "' ?"
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            "http://127.0.0.1:5000/admin/update_order/" + orderId,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus }),
+            }
+          );
+          const data = await res.json();
+          if (data.success) {
+            alert("Status Updated to " + newStatus);
+            loadOrders();
+          } else {
+            alert("Error: " + (data.message || "Failed to update status"));
+          }
+        } catch (e) {
+          console.error("Update status error:", e);
+          alert("Server error while updating status.");
+        }
+      }
+
+      async function deleteOrder(orderId) {
+        if (!confirm("⚠️ Are you sure you want to DELETE Order #" + orderId + "?\nThis will remove it from the list.")) {
+            return;
+        }
+        try {
+            const res = await fetch("http://127.0.0.1:5000/api/admin/order/delete/" + orderId, {
+                method: "POST"
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("🗑 Order Deleted Successfully");
+                loadOrders(); // Refresh List
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Delete failed.");
+        }
+      }
+
+      async function loadReservations(isPolling = false) {
+        let tbody = document.getElementById("bookings-body");
+        
+        if (!isPolling) {
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center'>Loading reservations...</td></tr>";
+        }
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/bookings");
+          const data = await res.json();
+
+          tbody.innerHTML = "";
+
+          if (!data.success || !data.bookings || data.bookings.length === 0) {
+            tbody.innerHTML =
+              "<tr><td colspan='6' style='text-align:center'>No table reservations found.</td></tr>";
+            return;
+          }
+
+          data.bookings.forEach((book) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td style="padding: 15px;">
+                        <span style="color: var(--primary); font-weight: bold;">#${book.booking_id}</span>
+                    </td>
+                    <td style="padding: 15px;">
+                        <strong style="color: #eee;">${book.full_name || "User"}</strong><br>
+                        <small style="color: #666;">${book.email || "-"}</small>
+                    </td>
+                    <td style="padding: 15px;">${book.booking_date} at ${book.booking_time}</td>
+                    <td style="padding: 15px;">${book.guests} People (Table ${book.table_id})</td>
+                    <td style="padding: 15px;">
+                        <span class="badge ${book.status === 'Confirmed' ? 'status-completed' : (book.status === 'Cancelled' ? 'status-cancelled' : 'status-pending')}">${book.status}</span>
+                    </td>
+                    <td style="padding: 15px;">
+                        <select class="status-select" onchange="updateBookingStatus('${book.booking_id}', this.value)">
+                            <option value="Pending" ${book.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Confirmed" ${book.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                            <option value="Cancelled" ${book.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <button class="btn-delete" style="margin-left:5px;" onclick="deleteBooking('${book.booking_id}')" title="Delete">🗑</button>
+                    </td>
+                </tr>
+            `;
+          });
+        } catch (e) {
+          console.error("Admin bookings load error:", e);
+          tbody.innerHTML =
+            "<tr><td colspan='6' style='text-align:center; color:red;'>Error loading reservations (Run app.py)</td></tr>";
+        }
+      }
+
+      async function updateBookingStatus(id, newStatus) {
+        if (!confirm("Update Booking #" + id + " to " + newStatus + "?")) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:5000/api/admin/booking/update/${id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Booking Status Updated!");
+                loadReservations();
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to update status");
+        }
+      }
+
+      async function deleteBooking(id) {
+        if (!confirm("⚠️ Are you sure you want to DELETE Booking #" + id + "?")) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:5000/api/admin/booking/delete/${id}`, { method: "POST" });
+            const data = await res.json();
+            if (data.success) {
+                alert("Booking Deleted!");
+                loadReservations();
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to delete booking");
+        }
+      }
+
+      function viewOrder(orderId) {
+        window.location.href = "/admin/order_details?id=" + orderId;
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to Logout?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,273 @@
+{% extends "user/layout.html" %}
+
+{% block title %}Contact Us - Smart Cafe{% endblock %}
+
+{% block styles %}
+<style>
+      :root {
+        --accent-blue: #4a90e2;
+        --text-dark: var(--brand-black);
+        --text-light: #666;
+      }
+      body {
+        /* Background Image Override */
+        background: linear-gradient(rgba(59, 0, 13, 0.85), rgba(59, 0, 13, 0.85)),
+          url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: var(--text-dark);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- CONTACT SECTION --- */
+      .contact-hero {
+        position: relative;
+        padding: 60px 50px;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .contact-grid {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1100px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      /* Left Side: Form */
+      .contact-left {
+        flex: 1.2;
+        padding: 50px;
+      }
+
+      .contact-left h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #222;
+      }
+
+      .contact-left p {
+        font-size: 1rem;
+        color: var(--text-light);
+        margin-bottom: 30px;
+      }
+
+      /* Form Styles */
+      .modern-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #444;
+        font-size: 0.9rem;
+      }
+      .modern-input,
+      .modern-select,
+      .modern-textarea {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: "Poppins", sans-serif;
+        background: #fdfdfd;
+      }
+      .modern-input:focus,
+      .modern-select:focus,
+      .modern-textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        background: white;
+      }
+      .modern-btn {
+        width: 100%;
+        padding: 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .modern-btn:hover {
+        background: #bf360c;
+      }
+
+      /* --- RIGHT SIDE: ICONS --- */
+      .contact-right {
+        flex: 0.8;
+        background: var(--primary); /* Orange background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 50px;
+        color: white;
+        text-align: center;
+        gap: 40px;
+      }
+
+      .icon-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        width: 100%;
+        max-width: 300px;
+        transition: 0.3s;
+      }
+
+      .icon-box:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-5px);
+      }
+
+      .icon-box i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #ffd54f; /* Yellow icon */
+      }
+
+      .icon-box h3 {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+
+      .icon-box p {
+        font-size: 1rem;
+        opacity: 0.9;
+      }
+
+      /* Responsive */
+      @media (max-width: 968px) {
+        .contact-grid {
+          flex-direction: column-reverse;
+        }
+        .contact-right {
+          padding: 30px;
+        }
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+    <section class="contact-hero">
+      <div class="contact-grid">
+        <div class="contact-left">
+          <h1>Get in Touch</h1>
+          <p>
+            Have questions about your order, or suggestions for our cafe? Fill
+            out the form below.
+          </p>
+
+          <form onsubmit="sendMessage(event)" class="modern-form">
+            <label>Your Name</label>
+            <input
+              type="text"
+              id="msg-name"
+              class="modern-input"
+              placeholder="Enter your full name"
+              required
+            />
+
+            <label>Subject</label>
+            <select id="msg-subject" class="modern-select">
+              <option>Food Quality Issue</option>
+              <option>Late Delivery</option>
+              <option>App Suggestion</option>
+              <option>General Inquiry</option>
+            </select>
+
+            <label>Message</label>
+            <textarea
+              id="msg-text"
+              rows="4"
+              class="modern-textarea"
+              placeholder="How can we help you?"
+              required
+            ></textarea>
+
+            <button type="submit" class="modern-btn">Send Message</button>
+          </form>
+        </div>
+
+        <div class="contact-right">
+          <div class="icon-box">
+            <i class="fas fa-phone-alt"></i>
+            <h3>Call Us</h3>
+            <p>+92 300 1234567</p>
+          </div>
+
+          <div class="icon-box">
+            <i class="fas fa-envelope"></i>
+            <h3>Email Us</h3>
+            <p>support@smartcafe.pk</p>
+          </div>
+
+          <div class="icon-box">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Visit Us</h3>
+            <p>CUI Vehari Campus</p>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+      async function sendMessage(event) {
+        event.preventDefault();
+        
+        let email = localStorage.getItem("currentUser");
+        if (!email) {
+          alert("⚠️ Please login first!");
+          window.location.href = "/user/login";
+          return;
+        }
+
+        let subject = document.getElementById("msg-subject").value.trim();
+        let message = document.getElementById("msg-text").value.trim();
+
+        if (!subject || !message) {
+          alert("⚠️ Please fill all fields!");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email,
+              subject: subject,
+              message: message
+            })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            alert("✅ Message sent successfully! Admin will reply soon.");
+            event.target.reset();
+          } else {
+            alert("❌ Error: " + (data.message || "Failed to send message"));
+          }
+        } catch (error) {
+          console.error("Contact error:", error);
+          alert("❌ Server connection failed. Make sure backend is running.");
+        }
+      }
+    </script>
+{% endblock %}

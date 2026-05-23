@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Manage Menu - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+    <style>
+      /* --- LOCAL CSS FOR MENU PAGE --- */
+
+      /* Split Layout */
+      .split-layout {
+        display: grid;
+        grid-template-columns: 1fr 2.5fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      /* Form Styling */
+      .form-card {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+      }
+
+      .form-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .input-group label {
+        font-size: 14px;
+        font-weight: bold;
+        color: #555;
+        margin-bottom: 5px;
+      }
+
+      .input-group input,
+      .input-group select {
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #f9f9f9;
+        transition: 0.3s;
+      }
+
+      .input-group input:focus,
+      .input-group select:focus {
+        border-color: #0d6efd;
+        background: white;
+        outline: none;
+      }
+
+      /* Image Upload Styling */
+      input[type="file"] {
+        padding: 9px; /* Thoda adjust kiya taake height same lage */
+        background: white;
+      }
+
+      /* Buttons */
+      .btn-action {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        color: white;
+        height: 45px; /* Fixed height to match inputs */
+      }
+      .btn-add {
+        background-color: #198754;
+        width: 100%;
+      }
+      .btn-add:hover {
+        background-color: #146c43;
+      }
+
+      .btn-update {
+        background-color: #ffc107;
+        color: #333;
+        width: 100%;
+        display: none;
+      } /* Hidden by default */
+      .btn-update:hover {
+        background-color: #e0a800;
+      }
+
+      .btn-cancel {
+        background-color: #6c757d;
+        width: 100%;
+        display: none;
+        margin-top: 5px;
+      }
+      .btn-cancel:hover {
+        background-color: #5c636a;
+      }
+
+      /* Table Image Preview */
+      .table-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      /* Action Buttons in Table */
+      .action-btn {
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+      .btn-edit {
+        background-color: #ffc107;
+        color: #333;
+      }
+      .btn-delete {
+        background-color: #dc3545;
+        color: white;
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .split-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management" class="active"
+            ><i>🍴</i> Menu Management</a
+          >
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <h2 class="page-title">Menu Management</h2>
+
+      <div class="split-layout">
+        <!-- Left Panel: Form -->
+        <div class="left-panel">
+          <div class="form-card">
+            <h3 style="margin-bottom: 20px; color: #333">Add / Edit Item</h3>
+
+            <form onsubmit="handleFormSubmit(event)" id="menu-form">
+              <input type="hidden" id="edit-index" />
+
+          <div class="form-grid">
+            <div class="input-group">
+              <label>Item Name</label>
+              <input
+                type="text"
+                id="food-name"
+                placeholder="e.g. Zinger Burger"
+                required
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Category</label>
+              <select id="food-cat" onchange="updateVariationPlaceholders()">
+                <option value="Fast Food">Fast Food</option>
+                <option value="Desi Food">Desi Food</option>
+                <option value="Drinks">Drinks</option>
+                <option value="Dessert">Dessert</option>
+              </select>
+            </div>
+
+            <!-- VARIATIONS SECTION -->
+            <div class="input-group" style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; background: #fdfdfd;">
+              <label style="margin-bottom: 10px; display:flex; justify-content: space-between;">
+                Variations (Sizes/Pieces)
+                <button type="button" onclick="addVariationRow()" style="background:#198754; color:white; border:none; padding:2px 8px; border-radius:4px; font-size:12px; cursor:pointer;">+ Add Size</button>
+              </label>
+              <div id="variations-container">
+                <div class="var-row" style="display:flex; gap:10px; margin-bottom:10px;">
+                  <select class="var-name" required style="flex:2; padding: 8px;">
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                  </select>
+                  <input type="number" class="var-pieces" placeholder="Pieces" required style="flex:1; padding: 8px;" />
+                  <input type="number" class="var-price" placeholder="Price" required style="flex:2; padding: 8px;" />
+                  <button type="button" onclick="if(document.querySelectorAll('.var-row').length > 1) this.parentElement.remove()" style="background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer; padding: 0 10px;">X</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Ingredients</label>
+              <input
+                type="text"
+                id="food-ingredients"
+                placeholder="e.g., chicken, cheese, dough"
+              />
+            </div>
+
+            <div class="input-group">
+              <label>Image</label>
+              <input type="file" id="food-img" accept="image/*" onchange="previewSelectedImage(event)" />
+              <div id="img-preview-container" style="margin-top: 10px; display: none;">
+                <img id="img-preview" src="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;" alt="Preview" />
+              </div>
+            </div>
+          </div>
+
+          <div
+            style="margin-top: 20px; display: flex; gap: 10px; width: 100%"
+          >
+            <button type="submit" id="add-btn" class="btn-action btn-add">
+              + Add Item
+            </button>
+            <button type="submit" id="update-btn" class="btn-action btn-update">
+              Update
+            </button>
+            <button
+              type="button"
+              id="cancel-btn"
+              class="btn-action btn-cancel"
+              onclick="resetForm()"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+      </div> <!-- End left panel -->
+
+      <!-- Right Panel: Table and Search -->
+      <div class="right-panel">
+        <div class="table-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="table-title" style="margin-bottom: 0;">Current Menu Items</div>
+            <input type="text" id="searchInput" onkeyup="filterMenu()" placeholder="🔍 Search items by name..." 
+                   style="padding: 10px; border-radius: 6px; border: 1px solid #ddd; outline: none; width: 250px; background: #2a2a2a; color: white;">
+          </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="menu-body"></tbody>
+        </table>
+      </div>
+      </div> <!-- End right panel -->
+      </div> <!-- End split-layout -->
+    </div>
+
+    <script>
+      function previewSelectedImage(event) {
+        const file = event.target.files[0];
+        const container = document.getElementById('img-preview-container');
+        const img = document.getElementById('img-preview');
+        
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            img.src = e.target.result;
+            container.style.display = 'block';
+          }
+          reader.readAsDataURL(file);
+        } else {
+          img.src = '';
+          container.style.display = 'none';
+        }
+      }
+
+      function getDynamicPlaceholder() {
+          let cat = document.getElementById("food-cat") ? document.getElementById("food-cat").value : "";
+          if (cat === "Drinks" || cat === "Beverages") return "Glasses";
+          if (cat === "Fast Food" || cat === "Dessert") return "Pieces / Slices";
+          return "Pieces";
+      }
+
+      function updateVariationPlaceholders() {
+          let placeholder = getDynamicPlaceholder();
+          document.querySelectorAll('.var-pieces').forEach(input => {
+              input.placeholder = placeholder;
+          });
+      }
+
+      function addVariationRow(name='', pieces='', price='') {
+        const container = document.getElementById('variations-container');
+        const row = document.createElement('div');
+        row.className = 'var-row';
+        row.style.cssText = 'display:flex; gap:10px; margin-bottom:10px;';
+        let placeholder = getDynamicPlaceholder();
+        row.innerHTML = `
+          <select class="var-name" required style="flex:2; padding: 8px;">
+            <option value="Small" ${name==='Small'?'selected':''}>Small</option>
+            <option value="Medium" ${name==='Medium'?'selected':''}>Medium</option>
+            <option value="Large" ${name==='Large'?'selected':''}>Large</option>
+          </select>
+          <input type="number" class="var-pieces" placeholder="${placeholder}" required style="flex:1; padding: 8px;" value="${pieces}" />
+          <input type="number" class="var-price" placeholder="Price" required style="flex:2; padding: 8px;" value="${price}" />
+          <button type="button" onclick="if(document.querySelectorAll('.var-row').length > 1) this.parentElement.remove()" style="background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer; padding: 0 10px;">X</button>
+        `;
+        container.appendChild(row);
+      }
+
+      function filterMenu() {
+        let input = document.getElementById('searchInput');
+        let filter = input.value.toLowerCase();
+        let tbody = document.getElementById('menu-body');
+        let trs = tbody.getElementsByTagName('tr');
+
+        for (let i = 0; i < trs.length; i++) {
+          let td = trs[i].getElementsByTagName('td')[1]; // Item Name column is index 1
+          if (td) {
+            let txtValue = td.textContent || td.innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+              trs[i].style.display = "";
+            } else {
+              trs[i].style.display = "none";
+            }
+          }
+        }
+      }
+
+      window.onload = loadMenu;
+
+      // --- 1. LOAD MENU FROM DB ---
+      async function loadMenu() {
+        let tbody = document.getElementById("menu-body");
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center'>Loading...</td></tr>";
+
+        try {
+            const response = await fetch("/api/menu?t=" + new Date().getTime()); // Prevent caching
+            const data = await response.json();
+
+            if (data.success && data.menu.length > 0) {
+                tbody.innerHTML = "";
+                window.menuData = data.menu; // Store globally for edit access
+
+                data.menu.forEach((item, index) => {
+                    // Image Handling
+                    let imgSrc = item.image_url;
+                    if (imgSrc && !imgSrc.startsWith("http")) {
+                         imgSrc = "/static/images/" + imgSrc;
+                    }
+                    if (!imgSrc) imgSrc = "https://via.placeholder.com/50?text=Food";
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><img src="${imgSrc}" class="table-img" alt="Food"></td>
+                            <td style="font-weight:500;">${item.name}</td>
+                            <td><span class="badge" style="background:#6c757d">${item.category}</span></td>
+                            <td style="color:#198754; font-weight:bold; font-size: 12px;">
+                                ${item.variations && item.variations.length > 0 ? 
+                                    item.variations.map(v => `${v.variation_name}: Rs.${v.price}`).join('<br/>') : 'No variations'}
+                            </td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editItem(${index})">✎ Edit</button>
+                                <button class="action-btn btn-delete" onclick="deleteItem('${item.item_id}')">🗑 Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                 tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No items in menu. Add one!</td></tr>`;
+            }
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red">Error loading menu</td></tr>`;
+        }
+      }
+
+      // --- 2. ADD & UPDATE ITEM via API ---
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+
+        let name = document.getElementById("food-name").value;
+        let cat = document.getElementById("food-cat").value;
+        let ingredients = document.getElementById("food-ingredients") ? document.getElementById("food-ingredients").value : "";
+        let fileInput = document.getElementById("food-img");
+        let editIndex = document.getElementById("edit-index").value;
+
+        // Gather Variations
+        let variations = [];
+        document.querySelectorAll('.var-row').forEach(row => {
+            variations.push({
+                name: row.querySelector('.var-name').value,
+                pieces: parseInt(row.querySelector('.var-pieces').value),
+                price: parseFloat(row.querySelector('.var-price').value)
+            });
+        });
+
+        // Prepare Payload
+        let payload = {
+            name: name,
+            category: cat,
+            ingredients: ingredients,
+            variations: variations,
+            description: "Delicious " + name // Default desc if not in form
+        };
+        
+        // Handle Image Base64
+        if (fileInput.files.length > 0) {
+             payload.image = await convertBase64(fileInput.files[0]);
+        }
+
+        try {
+            if (editIndex === "") {
+                // ADD NEW
+                const res = await fetch("/api/admin/menu/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if(result.success) alert("Item Added Successfully!");
+                else alert("Error: " + result.message);
+
+            } else {
+                // UPDATE EXISTING
+                // Get item_id from global array using editIndex
+                let itemId = window.menuData[editIndex].item_id;
+                
+                const res = await fetch(`/api/admin/menu/update/${itemId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if(result.success) alert("Item Updated Successfully!");
+                else alert("Error: " + result.message);
+            }
+            
+            resetForm();
+            loadMenu(); // Reload from DB
+
+        } catch(err) {
+            alert("Request Failed: " + err);
+        }
+      }
+
+      // --- 3. EDIT MODE ---
+      function editItem(index) {
+        let item = window.menuData[index];
+
+        // Fill Form with Data
+        document.getElementById("food-name").value = item.name;
+        document.getElementById("food-cat").value = item.category;
+        if(document.getElementById("food-ingredients")) {
+            document.getElementById("food-ingredients").value = item.ingredients || '';
+        }
+        document.getElementById("edit-index").value = index;
+
+        // Fill Variations
+        const container = document.getElementById('variations-container');
+        container.innerHTML = ''; // Clear existing
+        if(item.variations && item.variations.length > 0) {
+            item.variations.forEach(v => {
+                addVariationRow(v.variation_name, v.pieces_count, v.price);
+            });
+        } else {
+            addVariationRow(); // Add empty row if none
+        }
+
+        // Show Image Preview for Edit
+        let imgSrc = item.image_url;
+        if (imgSrc && !imgSrc.startsWith("http")) imgSrc = "/static/images/" + imgSrc;
+        if (!imgSrc) imgSrc = "https://via.placeholder.com/50?text=Food";
+        document.getElementById('img-preview-container').style.display = 'block';
+        document.getElementById('img-preview').src = imgSrc;
+
+        // Change Buttons
+        document.getElementById("add-btn").style.display = "none";
+        document.getElementById("update-btn").style.display = "inline-block";
+        document.getElementById("cancel-btn").style.display = "inline-block";
+
+        // Scroll to Top
+        window.scrollTo(0, 0);
+      }
+
+      // --- 4. DELETE ITEM ---
+      async function deleteItem(itemId) {
+        if (confirm("Are you sure you want to delete this item? This cannot be undone.")) {
+          try {
+              const res = await fetch(`/api/admin/menu/delete/${itemId}`, { method: "DELETE" });
+              const result = await res.json();
+              if (result.success) {
+                  loadMenu();
+              } else {
+                  alert("Error deleting: " + result.message);
+              }
+          } catch(e) {
+              alert("Error: " + e);
+          }
+        }
+      }
+
+      // --- 5. UTILS ---
+      function resetForm() {
+        document.getElementById("menu-form").reset();
+        document.getElementById("edit-index").value = "";
+        if(document.getElementById("food-ingredients")) document.getElementById("food-ingredients").value = "";
+
+        // Reset Variations
+        const container = document.getElementById('variations-container');
+        container.innerHTML = '';
+        addVariationRow(); // Ensure at least one row exists
+
+        // Hide Image Preview
+        document.getElementById("img-preview-container").style.display = "none";
+        document.getElementById("img-preview").src = "";
+
+        // Buttons Reset
+        document.getElementById("add-btn").style.display = "inline-block";
+        document.getElementById("update-btn").style.display = "none";
+        document.getElementById("cancel-btn").style.display = "none";
+      }
+
+      // Helper: Convert Image to Base64 String
+      const convertBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const fileReader = new FileReader();
+          fileReader.readAsDataURL(file);
+          fileReader.onload = () => {
+            resolve(fileReader.result);
+          };
+          fileReader.onerror = (error) => {
+            reject(error);
+          };
+        });
+      };
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to Logout?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+{% extends 'user/layout.html' %}
+{% block title %}Help & Instructions - Smart Cafe{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h1 style="color: var(--bg-burgundy-dark); text-align: center; margin-bottom: 30px;">How to Use Smart Cafe</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-home"></i> 1. Home Page</h3>
+        <p>Start your journey on the home page. Here you'll find our latest offerings, discounts, and quick access to order your favorite meals.</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-utensils"></i> 2. Browse the Menu</h3>
+        <p>Click on the <strong>Menu</strong> link in the navigation bar to see all available food items. You can browse through categories like Burgers, Pizzas, Drinks, and more.</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-cart-plus"></i> 3. Add to Cart</h3>
+        <p>Found something you like? Click the <strong>Add to Cart</strong> button on the item card. You can select the quantity you want before adding it.</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-shopping-cart"></i> 4. View Your Cart</h3>
+        <p>Click the <strong>Cart</strong> icon at the top right of the screen to review your selected items. Here you can adjust quantities or remove items if needed.</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-check-circle"></i> 5. Place Your Order</h3>
+        <p>Once you're happy with your cart, proceed to checkout. Confirm your details and finalize the order. You'll receive an order confirmation immediately.</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="color: var(--brand-yellow-dark);"><i class="fas fa-list-alt"></i> 6. Track Your Orders</h3>
+        <p>Go to <strong>My Orders</strong> to see the status of your current and past orders. You can track whether your food is being prepared or is ready for pickup.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <a href="/user/menu" class="btn-order" style="background: var(--brand-yellow); color: var(--bg-burgundy-dark); padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 20px;">Start Ordering Now</a>
+    </div>
+</div>
+{% endblock %}

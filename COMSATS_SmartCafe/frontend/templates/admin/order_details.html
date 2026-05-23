@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Order Details - Smart Cafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_style.css') }}" />
+    <style>
+      /* Previous CSS styles... */
+      .details-wrapper {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-top: 20px;
+      }
+      .detail-box {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 25px;
+      }
+      .box-header {
+        padding: 15px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .box-body {
+        padding: 25px;
+      }
+      .header-order {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+      }
+      .header-cust {
+        background: linear-gradient(135deg, #2c3e50, #212529);
+      }
+      .header-action {
+        background: linear-gradient(135deg, #198754, #146c43);
+      }
+      .header-msg {
+        background: linear-gradient(135deg, #6610f2, #520dc2);
+      }
+      .order-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .order-table th {
+        text-align: left;
+        color: #666;
+        font-size: 13px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+      }
+      .order-table td {
+        padding: 15px 0;
+        border-bottom: 1px solid #f4f4f4;
+        color: #333;
+        font-weight: 500;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px dashed #ddd;
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+      }
+      .profile-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .profile-icon {
+        width: 40px;
+        height: 40px;
+        background: #e9ecef;
+        color: #555;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 18px;
+      }
+      .profile-info h4 {
+        margin: 0;
+        font-size: 14px;
+        color: #777;
+        font-weight: normal;
+      }
+      .profile-info p {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+      }
+      .action-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .btn-status {
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        width: 100%;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: white;
+        padding: 8px 15px;
+        border-radius: 30px;
+        color: #555;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: 0.3s;
+      }
+      .back-btn:hover {
+        background: #eee;
+        color: #000;
+      }
+      .msg-item {
+        background: #f8f9fa;
+        border-left: 3px solid #6610f2;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body class="dashboard-body">
+    <div class="sidebar">
+      <div>
+        <div class="sidebar-header">Admin Panel</div>
+
+        <div class="sidebar-menu">
+          <a href="/admin/dashboard"><i>📊</i> Dashboard</a>
+          <a href="/admin/order_management"><i>📄</i> Order Management</a>
+          <a href="/admin/menu_management"><i>🍴</i> Menu Management</a>
+          <a href="/admin/user_management"><i>👥</i> User Management</a>
+          <a href="/admin/admin_reviews"><i>⭐</i> Customer Reviews</a>
+          <a href="/admin/notifications"><i>🔔</i> Notifications</a>
+          <a href="/admin/table_management"><i>🪑</i> Table Management</a>
+        </div>
+      </div>
+      <a href="#" onclick="confirmLogout(event)" class="logout-btn">↪ Logout</a>
+    </div>
+
+    <div class="main-content">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        "
+      >
+        <a href="/admin/order_management" class="back-btn">← Back to Orders</a>
+        <span style="color: #666"
+          >Order ID: <b id="display-id" style="color: #333">...</b></span
+        >
+      </div>
+
+      <div class="details-wrapper">
+        <div class="left-col">
+          <div class="detail-box">
+            <div class="box-header header-order">
+              <span>🧾 Order Summary</span>
+              <span id="order-date" style="font-size: 12px; opacity: 0.8"
+                >Date: ...</span
+              >
+            </div>
+            <div class="box-body">
+              <table class="order-table">
+                <thead>
+                  <tr>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th style="text-align: right">Price</th>
+                    <th style="text-align: right">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="items-list"></tbody>
+              </table>
+              <div class="total-row">
+                <span>Grand Total</span>
+                <span style="color: #0d6efd" id="order-total">Rs. 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-col">
+          <div class="detail-box">
+            <div class="box-header header-cust">
+              <span>👤 Customer Details</span>
+            </div>
+            <div class="box-body">
+              <div class="profile-row">
+                <div class="profile-icon">👤</div>
+                <div class="profile-info">
+                  <h4>Name</h4>
+                  <p id="cust-name">Loading...</p>
+                </div>
+              </div>
+              <div class="profile-row">
+                <div class="profile-icon">📞</div>
+                <div class="profile-info">
+                  <h4>Phone</h4>
+                  <p id="cust-phone">Loading...</p>
+                </div>
+              </div>
+              <div class="profile-row">
+                <div class="profile-icon">ℹ️</div>
+                <div class="profile-info">
+                  <h4>Order Type</h4>
+                  <p id="order-type">Loading...</p>
+                </div>
+              </div>
+              
+              <!-- Dynamic Sections -->
+              <div class="profile-row" id="table-row" style="display:none;">
+                <div class="profile-icon">🪑</div>
+                <div class="profile-info">
+                  <h4>Table Info</h4>
+                  <p id="table-info">Loading...</p>
+                </div>
+              </div>
+
+              <div class="profile-row" id="address-row" style="display:none;">
+                <div class="profile-icon">📍</div>
+                <div class="profile-info">
+                  <h4>Address</h4>
+                  <p id="order-address" style="font-size:14px;">Loading...</p>
+                </div>
+              </div>
+
+              <div class="profile-row">
+                <div class="profile-icon">✉️</div>
+                <div class="profile-info">
+                  <h4>Email</h4>
+                  <p id="cust-email">Loading...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-box">
+            <div class="box-header header-action">
+              <span>⚡ Manage Order</span>
+              <span id="current-status" class="badge">Pending</span>
+            </div>
+            <div class="box-body">
+              <!-- Payment Status Section -->
+              <div style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #0d6efd;">
+                <p style="margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555;">Payment Status:</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="payment-status-display" style="font-weight: bold; font-size: 16px;">-</span>
+                    <div>
+                         <button onclick="updatePaymentStatus('Paid')" class="btn-sm" style="background:#198754; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Mark Paid</button>
+                         <button onclick="updatePaymentStatus('Pending')" class="btn-sm" style="background:#ffc107; color:black; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Mark Pending</button>
+                    </div>
+                </div>
+                <p id="trx-display" style="font-size: 12px; color: #777; margin-top: 5px;"></p>
+              </div>
+
+              <div class="action-grid">
+                <button
+                  class="btn-status"
+                  style="background: #0dcaf0"
+                  onclick="updateStatus('Cooking')"
+                >
+                  Cooking
+                </button>
+                <button
+                  class="btn-status"
+                  style="background: #ffc107; color: #333"
+                  onclick="updateStatus('Ready')"
+                >
+                  Ready
+                </button>
+                <button
+                  class="btn-status"
+                  style="background: #198754; grid-column: span 2"
+                  onclick="updateStatus('Completed')"
+                >
+                  Mark Completed
+                </button>
+                <button
+                  class="btn-status"
+                  style="background: #dc3545; grid-column: span 2"
+                  onclick="updateStatus('Cancelled')"
+                >
+                  Cancel Order
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-box">
+            <div class="box-header header-msg">
+              <span>📩 User History</span>
+            </div>
+            <div class="box-body" id="user-msgs">
+              <p style="color: #aaa">No previous messages.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const ADMIN_API_BASE = "http://127.0.0.1:5000/api/admin";
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get("id");
+
+      window.onload = function () {
+        if (!orderId) {
+          alert("No Order ID Found!");
+          window.location.href = "/admin/order_management";
+          return;
+        }
+        loadDetails();
+      };
+
+      async function loadDetails() {
+        const tbody = document.getElementById("items-list");
+        tbody.innerHTML = "";
+
+        try {
+          const res = await fetch(ADMIN_API_BASE + "/orders");
+          const data = await res.json();
+
+          if (!data.success || !data.orders || data.orders.length === 0) {
+            alert("Order not found!");
+            return;
+          }
+
+          const order = data.orders.find(
+            (o) => String(o.order_id) === String(orderId)
+          );
+          if (!order) {
+            alert("Order not found!");
+            return;
+          }
+
+          // Fill header info
+          document.getElementById("display-id").innerText = "#" + order.order_id;
+          document.getElementById("order-date").innerText =
+            "Placed on: " + (order.created_at || "-");
+          document.getElementById("cust-name").innerText =
+            order.full_name || "User";
+          document.getElementById("cust-phone").innerText =
+            order.phone || "-";
+          document.getElementById("cust-email").innerText = order.email || "-";
+          
+          // Order Type & Details
+          document.getElementById("order-type").innerText = order.order_type || "Takeaway";
+          
+          if (order.order_type === 'Dine-in') {
+             document.getElementById("table-row").style.display = "flex";
+             let tInfo = `Table: ${order.table_number || '-'} | Guests: ${order.number_of_guests || '-'}`;
+             document.getElementById("table-info").innerText = tInfo;
+             document.getElementById("address-row").style.display = "none";
+          } else {
+             document.getElementById("table-row").style.display = "none";
+             document.getElementById("address-row").style.display = "flex";
+             // Clean up address (Remove 'Phone: ...' part if displayed separately, but keeping it full is safe)
+             let addr = order.delivery_address || "-";
+             if (addr.includes("| Phone:")) addr = addr.split("| Phone:")[0];
+             document.getElementById("order-address").innerText = addr;
+          }
+
+          // Status
+          const statusSpan = document.getElementById("current-status");
+          statusSpan.innerText = order.status;
+          statusSpan.className = "badge " + getStatusClass(order.status);
+
+          // Payment Status
+          const paySpan = document.getElementById("payment-status-display");
+          paySpan.innerText = order.payment_status || "Pending";
+          paySpan.style.color = order.payment_status === "Paid" ? "#198754" : "#dc3545";
+          
+          if (order.payment_method === "JazzCash" && order.transaction_id) {
+              document.getElementById("trx-display").innerText = "TRX ID: " + order.transaction_id;
+          } else {
+              document.getElementById("trx-display").innerText = "Method: " + (order.payment_method || "COD");
+          }
+
+          // Items
+          (order.items || []).forEach((item) => {
+            tbody.innerHTML += `<tr>
+              <td>${item.name}</td>
+              <td style="text-align: center;">${item.quantity}</td>
+              <td style="text-align: right;">${item.price_at_time}</td>
+              <td style="text-align: right; font-weight: bold;">${
+                item.price_at_time * item.quantity
+              }</td>
+            </tr>`;
+          });
+          document.getElementById("order-total").innerText =
+            "Rs. " + (order.total_amount || 0);
+
+          // Load user messages for this customer
+          await loadUserMessages(order.full_name || "");
+        } catch (e) {
+          console.error("Order details load error:", e);
+          alert("Error loading order details (Run app.py).");
+        }
+      }
+
+      function getStatusClass(status) {
+        if (status === "Completed" || status === "Ready")
+          return "status-completed";
+        if (status === "Cancelled") return "status-cancelled";
+        if (status === "Cooking") return "status-cooking";
+        return "status-pending";
+      }
+
+      async function updateStatus(newStatus) {
+        if (!newStatus) return;
+
+        if (
+          !confirm(
+            "Update order #" + orderId + " status to '" + newStatus + "' ?"
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            "http://127.0.0.1:5000/admin/update_order/" + orderId,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus }),
+            }
+          );
+          const data = await res.json();
+          if (data.success) {
+            alert("Order updated to: " + newStatus);
+            loadDetails();
+          } else {
+            alert("Error: " + (data.message || "Failed to update status"));
+          }
+        } catch (e) {
+          console.error("Update status error:", e);
+          alert("Server error while updating status.");
+        }
+      }
+
+      async function updatePaymentStatus(newStatus) {
+        if (!confirm("Update Payment Status to '" + newStatus + "'?")) return;
+
+        try {
+          const res = await fetch("http://127.0.0.1:5000/api/admin/update_payment/" + orderId, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert("Payment Updated!");
+            loadDetails();
+          } else {
+            alert("Error: " + data.message);
+          }
+        } catch (e) {
+            console.error(e);
+            alert("Server Error");
+        }
+      }
+
+      async function loadUserMessages(customerName) {
+        try {
+          const msgRes = await fetch(ADMIN_API_BASE + "/messages");
+          const msgData = await msgRes.json();
+          const messages = msgData.messages || [];
+          
+          // Filter messages from this customer
+          const userMsgs = messages.filter(
+            (m) => m.full_name && m.full_name.toLowerCase() === customerName.toLowerCase()
+          );
+          
+          const msgBox = document.getElementById("user-msgs");
+          if (userMsgs.length === 0) {
+            msgBox.innerHTML = "<p style='color:#aaa;'>No previous messages.</p>";
+            return;
+          }
+          
+          msgBox.innerHTML = "";
+          userMsgs.forEach((m) => {
+            let date = m.created_at ? new Date(m.created_at).toLocaleString() : "-";
+            let replyHtml = m.admin_reply
+              ? `<div style="margin-top:8px; padding:8px; background:#e2e3e5; border-radius:4px; color:#333;"><strong>Admin Reply:</strong> ${m.admin_reply}</div>`
+              : "";
+            msgBox.innerHTML += `
+              <div class="msg-item" style="margin-bottom:15px; padding:10px; background:#f8f9fa; border-radius:5px;">
+                <strong>${m.subject || "Message"}</strong><br>
+                <span style="color:#666; font-size:13px;">${date}</span><br>
+                <span style="color:#333;">${m.message}</span>
+                ${replyHtml}
+              </div>
+            `;
+          });
+        } catch (e) {
+          console.error("Load user messages error:", e);
+          document.getElementById("user-msgs").innerHTML = "<p style='color:#aaa;'>Error loading messages.</p>";
+        }
+      }
+
+      function confirmLogout(event) {
+        event.preventDefault();
+        if (confirm("Are you sure you want to Logout?")) {
+          window.location.href = "/";
+        }
+      }
+    </script>
+  </body>
+</html>
