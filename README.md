@@ -65,6 +65,8 @@ The system features an intelligent recommendation engine powered by **Scikit-lea
 
 #### Support
 ![Contact Us Page](https://github.com/user-attachments/assets/6ae7cad7-63fc-476d-b2fb-94765c1a13ad)
+ ####This image shows the Smart Cafe User Home Page, which includes a distinct 'AI Calorie Budget Meter' section.
+ <img width="1918" height="952" alt="image" src="https://github.com/user-attachments/assets/3cc65225-d534-473d-ab53-de7a1e0ed1a5" />
 
 ---
 
