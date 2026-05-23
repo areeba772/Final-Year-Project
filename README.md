@@ -52,7 +52,8 @@ The system features an intelligent recommendation engine powered by **Scikit-lea
 | ![User-Login](https://github.com/user-attachments/assets/44a8aca8-0f0f-4ef2-975d-2a3bdb23db0c) | ![User-signup](https://github.com/user-attachments/assets/c2349c11-f8f2-4ddd-9bca-b51fc0b2cab1) |
 
 #### User Home & AI Panel
-![User Home Page](https://github.com/user-attachments/assets/49ed09f7-bb70-4b48-8426-b2818049a81b)
+![User Home Page](<img width="1918" height="982" alt="image" src="https://github.com/user-attachments/assets/0fbb34f2-0148-4bea-9265-0404738ed956" />
+
 ![AI Food Recommendation](https://github.com/user-attachments/assets/b01c5769-ed3a-46df-a370-bcba00ec182a)
 
 #### Ordering & Reservation Flow
