@@ -75,7 +75,8 @@ The system features an intelligent recommendation engine powered by **Scikit-lea
 
 #### Operations & Management
 * **Order Tracking:** ![Order Management Page](https://github.com/user-attachments/assets/9cfedfd9-4067-456b-88d0-6c4528a9e6a5)
-* **Menu Editing:** ![Menu Management Page](https://github.com/user-attachments/assets/cf217e3d-2304-4fab-a87e-eed9e3462e61)
+* **Menu Editing:** <img width="1918" height="997" alt="image" src="https://github.com/user-attachments/assets/66bfbd34-4cce-46b1-85ee-08d3f830d476" />
+
 * **Table Logs:** ![Table Management Page](https://github.com/user-attachments/assets/d1871e4c-a88a-46c3-a9d9-dd7bf47431eb)
 
 #### Feedback & Compliance Alerts
